@@ -386,4 +386,4 @@ class PlantCard extends StatelessWidget {
       ),
     );
   }
-}
+} 
