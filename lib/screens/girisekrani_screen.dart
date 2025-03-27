@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'home_screen.dart';
 
 class GirisekraniScreen extends StatelessWidget {
@@ -129,6 +130,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       TextEditingController();
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
+  String _errorMessage = '';
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   void dispose() {
@@ -166,13 +169,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return null;
   }
 
-  void _register() {
+  Future<void> _register() async {
     if (_formKey.currentState!.validate()) {
-      // TODO: Implement registration logic
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kayıt işlemi başarılı')),
-      );
-      Navigator.pop(context);
+      try {
+        await _auth.createUserWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Kayıt işlemi başarılı')),
+        );
+        Navigator.pop(context);
+      } on FirebaseAuthException catch (e) {
+        setState(() {
+          _errorMessage = e.message ?? 'Bir hata oluştu.';
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_errorMessage)),
+        );
+      }
     }
   }
 
@@ -257,6 +272,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 onPressed: _register,
                 child: const Text("Kayıt Ol"),
               ),
+              
+              if (_errorMessage.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 20),
+                  child: Text(
+                    _errorMessage,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ),
             ],
           ),
         ),
@@ -278,6 +302,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
   bool _rememberMe = false;
+  String _errorMessage = '';
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   void dispose() {
@@ -300,15 +326,24 @@ class _LoginScreenState extends State<LoginScreen> {
     return null;
   }
 
-  void _login() {
+  Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
-      // Giriş işlemi başarılı
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-        (route) =>
-            false, // Tüm önceki sayfaları kapatıp sadece HomeScreen'i açacak
-      );
+      try {
+        await _auth.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+        // Giriş işlemi başarılı
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (route) => false, // Tüm önceki sayfaları kapatıp sadece HomeScreen'i açacak
+        );
+      } on FirebaseAuthException catch (e) {
+        setState(() {
+          _errorMessage = e.message ?? 'Bir hata oluştu.';
+        });
+      }
     }
   }
 
@@ -392,6 +427,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: _login,
                 child: const Text("Giriş Yap"),
               ),
+              
+              if (_errorMessage.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 20),
+                  child: Text(
+                    _errorMessage,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ),
             ],
           ),
         ),

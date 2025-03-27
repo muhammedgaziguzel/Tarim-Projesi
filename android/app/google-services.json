@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "664155947414",
-    "project_id": "tarim-projesi-7cf4c",
-    "storage_bucket": "tarim-projesi-7cf4c.firebasestorage.app"
+    "project_number": "671180465750",
+    "project_id": "esasproje-7adc6",
+    "storage_bucket": "esasproje-7adc6.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:664155947414:android:197cef9e1ddb88bc9eddb7",
+        "mobilesdk_app_id": "1:671180465750:android:3667638379b9967c547df7",
         "android_client_info": {
           "package_name": "com.example.tarim_proje"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDjpi7kzV_A9vvEr-kDcSpjyY4NCqBNgVQ"
+          "current_key": "AIzaSyC_ZRYFCjELXScnLUpNYn8aDBAgh7F8Ze4"
         }
       ],
       "services": {

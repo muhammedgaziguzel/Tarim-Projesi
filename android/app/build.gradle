@@ -1,10 +1,10 @@
 plugins {
     id "com.android.application"
     // START: FlutterFire Configuration
-    id 'com.google.gms.google-services'
+    id 'com.google.gms.google-services'  // Google Services Gradle Plugin'i burada ekliyoruz
     // END: FlutterFire Configuration
-    id "kotlin-android"
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    id "kotlin-android" 
+    // Flutter Gradle Plugin'i uygulama ile ilgili pluginlerin sonunda
     id "dev.flutter.flutter-gradle-plugin"
 }
 
@@ -23,11 +23,8 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.tarim_proje"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = 23  // ✅ minSdk 21 yerine 23 yapıldı
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -35,11 +32,21 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.debug
         }
     }
+}
+
+dependencies {
+    // Firebase BoM (Bill of Materials) import ediliyor
+    implementation platform('com.google.firebase:firebase-bom:33.0.0')
+
+    // Firebase Analytics bağımlılığı (Firebase ürünlerinden biri)
+    implementation 'com.google.firebase:firebase-analytics'
+
+    // Diğer Firebase ürünleri buraya eklenebilir:
+    implementation 'com.google.firebase:firebase-auth'  // ✅ Firebase Auth eklendi
+    implementation 'com.google.firebase:firebase-firestore' // ✅ Firestore eklendi
 }
 
 flutter {

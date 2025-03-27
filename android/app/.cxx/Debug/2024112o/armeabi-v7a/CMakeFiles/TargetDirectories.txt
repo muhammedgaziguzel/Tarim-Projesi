@@ -1,0 +1,2 @@
+/Users/hasanakbaba/Desktop/Tarim-Projesi/android/app/.cxx/Debug/2024112o/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/hasanakbaba/Desktop/Tarim-Projesi/android/app/.cxx/Debug/2024112o/armeabi-v7a/CMakeFiles/rebuild_cache.dir

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'bitkilerim_screen.dart';
 import 'hesabim_screen.dart';
 import 'hava_durumu_screen.dart';
@@ -10,6 +11,7 @@ import 'yapilacaklar_screen.dart';
 import 'galeri_screen.dart';
 import 'bilgiler_screen.dart';
 import 'package:tarim_proje/widgets/drawer_menu.dart';
+import 'girisekrani_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,10 +22,11 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   final List<Widget> _screens = [
     const BitkilerimApp(),
-    const HavaDurumuScreen(),
+    const WeatherApp(),
     const HesabimScreen(),
     const TakvimScreen(),
     const DerslerScreen(),
@@ -48,7 +51,6 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   void _onTabSelected(int index) {
-    // sadece 0-3 arasındaki öğelere tıklandığında BottomNavigationBar'ı güncelle
     if (index >= 0 && index <= 3) {
       setState(() {
         _selectedIndex = index;
@@ -57,11 +59,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onDrawerItemTapped(int index) {
-    // Drawer'daki öğelere geçiş yaparken 4 ekleyelim çünkü Drawer öğeleri 4-9 arasında
     setState(() {
       _selectedIndex = index + 4;
     });
     Navigator.pop(context);
+  }
+
+  void _signOut() async {
+    await _auth.signOut();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const GirisekraniScreen()),
+    );
   }
 
   @override
@@ -71,12 +80,16 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text(_titles[_selectedIndex]),
         backgroundColor: const Color.fromARGB(255, 156, 97, 20),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _signOut,
+          ),
+        ],
       ),
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex < 4
-            ? _selectedIndex
-            : 0, // 0-3 arasındaki indeksler için sınır
+        currentIndex: _selectedIndex < 4 ? _selectedIndex : 0,
         onTap: _onTabSelected,
         type: BottomNavigationBarType.fixed,
         backgroundColor: const Color.fromARGB(255, 156, 97, 20),
@@ -111,7 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       drawer: DrawerMenu(
         onItemTapped: _onDrawerItemTapped,
-        selectedIndex: _selectedIndex - 4, // Drawer öğeleri için offset
+        selectedIndex: _selectedIndex - 4,
       ),
     );
   }
