@@ -1,1 +1,0 @@
-/Users/hasanakbaba/Desktop/Tarim-Projesi/android/app/src/main/kotlin/com/example/tarim_proje/MainActivity.kt

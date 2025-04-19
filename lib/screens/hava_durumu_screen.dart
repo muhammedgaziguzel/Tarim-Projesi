@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../models/weather_model.dart';
+import '../repositories/weather_repository.dart';
 import 'package:intl/intl.dart';
 
 void main() {
@@ -31,165 +33,11 @@ class WeatherApp extends StatelessWidget {
   }
 }
 
-class WeatherModel {
-  final String day;
-  final String condition;
-  final int temperature;
-  final int windSpeed;
-  final int humidity;
-  final int precipitation;
-
-  WeatherModel({
-    required this.day,
-    required this.condition,
-    required this.temperature,
-    required this.windSpeed,
-    required this.humidity,
-    required this.precipitation,
-  });
-
-  factory WeatherModel.fromJson(Map<String, dynamic> json) {
-    return WeatherModel(
-      day: json['gun'],
-      condition: json['durum'],
-      temperature: json['sicaklik'],
-      windSpeed: json['ruzgar'],
-      humidity: json['nem'],
-      precipitation: json['yagis'],
-    );
-  }
-
-  String getSuggestion() {
-    switch (condition) {
-      case "Güneşli":
-        return "Bugün hava güneşli! Bitkilerinizi düzenli sulayın ancak fazla sulamaktan kaçının.";
-      case "Parçalı Bulutlu":
-        return "Bugün hava parçalı bulutlu. Dışarıda yapılacak aktiviteler için uygun bir gün.";
-      case "Yağmurlu":
-        return "Bugün yağmur var! Sulama yapmanıza gerek yok, toprak doğal olarak nemlenecektir.";
-      case "Fırtınalı":
-        return "Bugün fırtına bekleniyor! Seraları ve dış mekandaki hassas bitkileri korumaya alın.";
-      case "Bulutlu":
-        return "Bugün hava bulutlu. Toprak nemini kontrol edin, belki hafif bir sulama gerekebilir.";
-      case "Rüzgarlı":
-        return "Bugün rüzgar var! İlaçlama yapmaktan kaçının çünkü rüzgar ilacı dağıtabilir.";
-      default:
-        return "Bugün hava durumu normal. Günlük işlerinize devam edebilirsiniz.";
-    }
-  }
-
-  IconData getWeatherIcon() {
-    switch (condition) {
-      case "Güneşli":
-        return Icons.wb_sunny;
-      case "Parçalı Bulutlu":
-        return Icons.cloud;
-      case "Yağmurlu":
-        return Icons.grain;
-      case "Fırtınalı":
-        return Icons.flash_on;
-      case "Bulutlu":
-        return Icons.cloud_queue;
-      case "Rüzgarlı":
-        return Icons.air;
-      default:
-        return Icons.wb_cloudy;
-    }
-  }
-
-  Color getWeatherColor() {
-    switch (condition) {
-      case "Güneşli":
-        return Colors.orange;
-      case "Parçalı Bulutlu":
-        return Colors.lightBlue;
-      case "Yağmurlu":
-        return Colors.blueGrey;
-      case "Fırtınalı":
-        return Colors.deepPurple;
-      case "Bulutlu":
-        return Colors.grey;
-      case "Rüzgarlı":
-        return Colors.teal;
-      default:
-        return Colors.blue;
-    }
-  }
-}
-
 class LocationService {
   Future<String> getCurrentLocation() async {
     // In a real app, this would use a location service like geolocator package
     await Future.delayed(const Duration(seconds: 2));
     return "İstanbul";
-  }
-}
-
-class WeatherRepository {
-  // This would be an API service in a real app
-  Future<List<WeatherModel>> getWeeklyForecast() async {
-    await Future.delayed(const Duration(seconds: 1));
-
-    final List<Map<String, dynamic>> weatherData = [
-      {
-        "gun": "Pazartesi",
-        "durum": "Güneşli",
-        "sicaklik": 27,
-        "ruzgar": 10,
-        "nem": 50,
-        "yagis": 0
-      },
-      {
-        "gun": "Salı",
-        "durum": "Parçalı Bulutlu",
-        "sicaklik": 24,
-        "ruzgar": 15,
-        "nem": 55,
-        "yagis": 10
-      },
-      {
-        "gun": "Çarşamba",
-        "durum": "Yağmurlu",
-        "sicaklik": 20,
-        "ruzgar": 20,
-        "nem": 80,
-        "yagis": 60
-      },
-      {
-        "gun": "Perşembe",
-        "durum": "Fırtınalı",
-        "sicaklik": 18,
-        "ruzgar": 30,
-        "nem": 90,
-        "yagis": 80
-      },
-      {
-        "gun": "Cuma",
-        "durum": "Bulutlu",
-        "sicaklik": 22,
-        "ruzgar": 12,
-        "nem": 60,
-        "yagis": 20
-      },
-      {
-        "gun": "Cumartesi",
-        "durum": "Güneşli",
-        "sicaklik": 26,
-        "ruzgar": 10,
-        "nem": 45,
-        "yagis": 0
-      },
-      {
-        "gun": "Pazar",
-        "durum": "Rüzgarlı",
-        "sicaklik": 23,
-        "ruzgar": 25,
-        "nem": 55,
-        "yagis": 10
-      },
-    ];
-
-    return weatherData.map((e) => WeatherModel.fromJson(e)).toList();
   }
 }
 
@@ -279,7 +127,7 @@ class _WeatherScreenState extends State<WeatherScreen>
 
       // Get forecast
       final List<WeatherModel> forecast =
-          await _weatherRepository.getWeeklyForecast();
+          await _weatherRepository.getWeeklyForecast(city);
 
       setState(() {
         _city = city;

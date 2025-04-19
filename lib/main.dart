@@ -4,10 +4,21 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'screens/girisekrani_screen.dart';
 import 'screens/home_screen.dart';
 import 'services/auth_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Firebase başlatmadan önce gerekli
-  await Firebase.initializeApp(); // Firebase'i başlat
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // .env dosyasını açıkça tanımlayarak yükle ve hataları yakala
+  try {
+    await dotenv.load(fileName: ".env");
+    print("✅ .env yüklendi: ${dotenv.env['API_KEY']}");
+  } catch (e) {
+    print("❌ .env yüklenemedi: $e");
+  }
+
+  await Firebase.initializeApp();
+
   runApp(const MyApp());
 }
 

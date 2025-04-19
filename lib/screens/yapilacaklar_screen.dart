@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/todo_service.dart';
 
 class YapilacaklarScreen extends StatefulWidget {
   const YapilacaklarScreen({super.key});
@@ -11,12 +12,37 @@ class _YapilacaklarScreenState extends State<YapilacaklarScreen> {
   final List<String> _tasks = [];
   final TextEditingController _controller = TextEditingController();
 
-  void _addTask() {
-    if (_controller.text.isNotEmpty) {
+  final TodoService _todoService = TodoService();
+  final int _userId = 1; // Geçici olarak sabit bir kullanıcı ID
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTasks();
+  }
+
+  Future<void> _loadTasks() async {
+    try {
+      final todos = await _todoService.fetchTodos(_userId);
       setState(() {
-        _tasks.add(_controller.text);
-        _controller.clear();
+        _tasks.clear();
+        _tasks.addAll(todos.map<String>((e) => e['title']));
       });
+    } catch (e) {
+      print('Görevler alınırken hata oluştu: $e');
+    }
+  }
+
+  void _addTask() async {
+    if (_controller.text.isNotEmpty) {
+      final newTask = _controller.text;
+      try {
+        await _todoService.addTodo(newTask, _userId);
+        _controller.clear();
+        _loadTasks(); // Yeni görevden sonra listeyi yeniden yükle
+      } catch (e) {
+        print('Görev eklenirken hata oluştu: $e');
+      }
     }
   }
 
@@ -24,6 +50,7 @@ class _YapilacaklarScreenState extends State<YapilacaklarScreen> {
     setState(() {
       _tasks.removeAt(index);
     });
+    // API'de silme endpoint'i yok. Eklemek istersen haber ver 😊
   }
 
   @override
