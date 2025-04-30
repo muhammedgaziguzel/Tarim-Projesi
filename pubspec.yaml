@@ -15,7 +15,6 @@ dependencies:
   flutter_colorpicker: ^1.0.3
 
   # 🔥 Firebase paketlerini güncelledik
-
   # ✅ Firebase Web için gerekli paketler
   firebase_auth_web: ^5.8.13
   table_calendar: ^3.2.0
@@ -27,6 +26,10 @@ dependencies:
   cached_network_image: ^3.4.1
   js: ^0.7.2
   url_launcher: ^6.3.1
+  
+  # TensorFlow Lite ve kamera paketlerini ekliyoruz
+  tflite_flutter: ^0.9.0
+  camera: ^0.10.5
 
 dev_dependencies:
   flutter_test:
