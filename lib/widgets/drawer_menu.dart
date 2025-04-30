@@ -14,13 +14,13 @@ class DrawerMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     return Drawer(
       child: Container(
-        color: const Color.fromARGB(255, 247, 245, 240),
+        color: const Color.fromARGB(255, 237, 206, 169),
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
             const DrawerHeader(
               decoration: BoxDecoration(
-                color: Color.fromARGB(255, 156, 97, 20),
+                color: Color.fromARGB(255, 223, 133, 31),
               ),
               child: Align(
                 alignment: Alignment.bottomLeft,
@@ -37,21 +37,21 @@ class DrawerMenu extends StatelessWidget {
             // Ana Menü
             ListTile(
               leading:
-                  Icon(Icons.school, color: Color.fromARGB(255, 156, 97, 20)),
+                  Icon(Icons.school, color: Color.fromARGB(255, 161, 155, 148)),
               title: const Text('Dersler'),
               onTap: () => onItemTapped(0),
               selected: selectedIndex == 0,
             ),
             ListTile(
               leading: Icon(Icons.monetization_on,
-                  color: Color.fromARGB(255, 156, 97, 20)),
+                  color: Color.fromARGB(255, 161, 155, 148)),
               title: const Text('Tarım Kredisi'),
               onTap: () => onItemTapped(1),
               selected: selectedIndex == 1,
             ),
             ListTile(
               leading: Icon(Icons.inventory,
-                  color: Color.fromARGB(255, 156, 97, 20)),
+                  color: Color.fromARGB(255, 161, 155, 148)),
               title: const Text('Malzemeler'),
               onTap: () => onItemTapped(2),
               selected: selectedIndex == 2,
@@ -59,21 +59,21 @@ class DrawerMenu extends StatelessWidget {
             // Yeni Menü Öğeleri
             ListTile(
               leading:
-                  Icon(Icons.list, color: Color.fromARGB(255, 156, 97, 20)),
+                  Icon(Icons.list, color: Color.fromARGB(255, 161, 155, 148)),
               title: const Text('Yapılacaklar'),
               onTap: () => onItemTapped(3),
               selected: selectedIndex == 3,
             ),
             ListTile(
               leading: Icon(Icons.photo_album,
-                  color: Color.fromARGB(255, 156, 97, 20)),
+                  color: Color.fromARGB(255, 161, 155, 148)),
               title: const Text('Galeri'),
               onTap: () => onItemTapped(4),
               selected: selectedIndex == 4,
             ),
             ListTile(
               leading:
-                  Icon(Icons.info, color: Color.fromARGB(255, 156, 97, 20)),
+                  Icon(Icons.info, color: Color.fromARGB(255, 161, 155, 148)),
               title: const Text('Bilgiler'),
               onTap: () => onItemTapped(5),
               selected: selectedIndex == 5,
@@ -87,23 +87,23 @@ class DrawerMenu extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Color.fromARGB(255, 156, 97, 20),
+                  color: Color.fromARGB(255, 161, 155, 148),
                 ),
               ),
             ),
             const ListTile(
               leading:
-                  Icon(Icons.email, color: Color.fromARGB(255, 156, 97, 20)),
+                  Icon(Icons.email, color: Color.fromARGB(255, 161, 155, 148)),
               title: Text('E-posta: support@tarim.com'),
             ),
             const ListTile(
               leading:
-                  Icon(Icons.phone, color: Color.fromARGB(255, 156, 97, 20)),
+                  Icon(Icons.phone, color: Color.fromARGB(255, 161, 155, 148)),
               title: Text('Telefon: +90 123 456 78 90'),
             ),
             const ListTile(
               leading: Icon(Icons.help_outline,
-                  color: Color.fromARGB(255, 156, 97, 20)),
+                  color: Color.fromARGB(255, 161, 155, 148)),
               title: Text('Yardım & SSS'),
             ),
           ],
