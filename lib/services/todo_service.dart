@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart'; // Doğru import
 
 class TodoService {
-  final String baseUrl = dotenv.env['BASE_URL'] ?? 'http://10.0.2.2:8080';
+  String get baseUrl => dotenv.env['TODO_BASE_URL'] ?? 'http://10.0.2.2:8080';
 
   Future<List<dynamic>> fetchTodos(int userId) async {
     final response = await http.get(Uri.parse('$baseUrl/todos/$userId'));

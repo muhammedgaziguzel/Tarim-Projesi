@@ -28,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const BitkilerimApp(),
     const WeatherApp(),
     const HesabimScreen(),
-    const TakvimScreen(),
+    TakvimScreen(), // const kaldırıldı
     const DerslerScreen(),
     const TarimKredisiScreen(),
     const MalzemelerScreen(),
