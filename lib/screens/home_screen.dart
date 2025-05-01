@@ -10,8 +10,9 @@ import 'malzemeler_screen.dart';
 import 'yapilacaklar_screen.dart';
 import 'galeri_screen.dart';
 import 'bilgiler_screen.dart';
-import 'package:tarim_proje/widgets/drawer_menu.dart';
 import 'girisekrani_screen.dart';
+import 'package:tarim_proje/widgets/drawer_menu.dart';
+import 'package:tarim_proje/screens/ai_chat_screen.dart'; // 👈 AI ekranı eklendi
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -117,8 +118,14 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => print('Kamera açılıyor...'),
-        child: const Icon(Icons.camera),
+        onPressed: () {
+          // 👇 Butona tıklandığında AiChatScreen'e git
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AiChatScreen()),
+          );
+        },
+        child: const Icon(Icons.camera), // İstersen burayı değiştiririz
         backgroundColor: const Color(0xFF388E3C),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

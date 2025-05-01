@@ -26,6 +26,7 @@ dependencies:
   youtube_player_flutter: ^8.1.0
   camera: ^0.10.5+9
   tflite_flutter: ^0.10.0  # Burada eklenen tflite_flutter paketi
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:
