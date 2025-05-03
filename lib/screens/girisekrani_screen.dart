@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'home_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class GirisekraniScreen extends StatelessWidget {
   const GirisekraniScreen({super.key});
@@ -53,7 +54,6 @@ class WelcomeScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo
               ClipRRect(
                 borderRadius: BorderRadius.circular(75),
                 child: Image.asset(
@@ -64,7 +64,6 @@ class WelcomeScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-              // App Title
               const Text(
                 "Giriş",
                 style: TextStyle(
@@ -74,7 +73,6 @@ class WelcomeScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 48),
-              // Login Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -89,7 +87,6 @@ class WelcomeScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              // Register Text Button
               TextButton(
                 onPressed: () {
                   Navigator.push(
@@ -124,10 +121,15 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _surnameController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
+
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   String _errorMessage = '';
@@ -135,35 +137,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
+    _nameController.dispose();
+    _surnameController.dispose();
+    _phoneController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  // Simplified validation
-  String? _validateEmail(String? value) {
+  String? _validateNotEmpty(String? value, String fieldName) {
     if (value == null || value.isEmpty) {
-      return 'E-posta alanı boş olamaz';
-    } else if (!value.contains('@')) {
+      return '$fieldName alanı boş olamaz';
+    }
+    return null;
+  }
+
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty || !value.contains('@')) {
       return 'Geçerli bir e-posta adresi giriniz';
     }
     return null;
   }
 
   String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Şifre alanı boş olamaz';
-    } else if (value.length < 6) {
+    if (value == null || value.length < 6) {
       return 'Şifre en az 6 karakter olmalıdır';
     }
     return null;
   }
 
   String? _validateConfirmPassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Şifreyi doğrulama alanı boş olamaz';
-    } else if (value != _passwordController.text) {
+    if (value != _passwordController.text) {
       return 'Şifreler eşleşmiyor';
     }
     return null;
@@ -172,10 +177,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _register() async {
     if (_formKey.currentState!.validate()) {
       try {
+        // Kullanıcıyı Authentication'a kaydet
         await _auth.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
+
+        // Firestore'da kullanıcı belgesi oluştur
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(_auth.currentUser!.uid)
+            .set({
+          'isim': _nameController.text.trim(),
+          'soyisim': _surnameController.text.trim(),
+          'telefon': _phoneController.text.trim(),
+          'email': _emailController.text.trim(),
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Kayıt işlemi başarılı')),
         );
@@ -184,9 +203,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         setState(() {
           _errorMessage = e.message ?? 'Bir hata oluştu.';
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_errorMessage)),
-        );
       }
     }
   }
@@ -207,19 +223,45 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Email/Phone field
+              TextFormField(
+                controller: _nameController,
+                validator: (value) => _validateNotEmpty(value, "İsim"),
+                decoration: const InputDecoration(
+                  labelText: "İsim",
+                  prefixIcon: Icon(Icons.person),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _surnameController,
+                validator: (value) => _validateNotEmpty(value, "Soyisim"),
+                decoration: const InputDecoration(
+                  labelText: "Soyisim",
+                  prefixIcon: Icon(Icons.person_outline),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                validator: (value) =>
+                    _validateNotEmpty(value, "Telefon Numarası"),
+                decoration: const InputDecoration(
+                  labelText: "Telefon Numarası",
+                  prefixIcon: Icon(Icons.phone),
+                ),
+              ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 validator: _validateEmail,
                 decoration: const InputDecoration(
-                  labelText: "E-Posta veya Telefon Numarası",
+                  labelText: "E-Posta",
                   prefixIcon: Icon(Icons.email),
                 ),
               ),
               const SizedBox(height: 16),
-
-              // Password field
               TextFormField(
                 controller: _passwordController,
                 obscureText: !_isPasswordVisible,
@@ -228,11 +270,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   labelText: "Şifre",
                   prefixIcon: const Icon(Icons.lock),
                   suffixIcon: IconButton(
-                    icon: Icon(
-                      _isPasswordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                    ),
+                    icon: Icon(_isPasswordVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off),
                     onPressed: () {
                       setState(() {
                         _isPasswordVisible = !_isPasswordVisible;
@@ -242,8 +282,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-
-              // Confirm Password field
               TextFormField(
                 controller: _confirmPasswordController,
                 obscureText: !_isConfirmPasswordVisible,
@@ -252,11 +290,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   labelText: "Şifreyi Doğrula",
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
-                    icon: Icon(
-                      _isConfirmPasswordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                    ),
+                    icon: Icon(_isConfirmPasswordVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off),
                     onPressed: () {
                       setState(() {
                         _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
@@ -266,13 +302,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               const SizedBox(height: 32),
-
-              // Register button
               ElevatedButton(
                 onPressed: _register,
                 child: const Text("Kayıt Ol"),
               ),
-              
               if (_errorMessage.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 20),
@@ -333,11 +366,10 @@ class _LoginScreenState extends State<LoginScreen> {
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
-        // Giriş işlemi başarılı
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
-          (route) => false, // Tüm önceki sayfaları kapatıp sadece HomeScreen'i açacak
+          (route) => false,
         );
       } on FirebaseAuthException catch (e) {
         setState(() {
@@ -363,7 +395,6 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Email/Phone field
               TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
@@ -374,8 +405,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-
-              // Password field
               TextFormField(
                 controller: _passwordController,
                 obscureText: !_isPasswordVisible,
@@ -398,8 +427,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-
-              // Remember me checkbox
               Row(
                 children: [
                   Checkbox(
@@ -413,21 +440,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   const Text('Beni hatırla'),
                   const Spacer(),
                   TextButton(
-                    onPressed: () {
-                      // TODO: Implement forgot password
-                    },
+                    onPressed: () {},
                     child: const Text('Şifremi unuttum'),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
-
-              // Login button
               ElevatedButton(
                 onPressed: _login,
                 child: const Text("Giriş Yap"),
               ),
-              
               if (_errorMessage.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 20),
