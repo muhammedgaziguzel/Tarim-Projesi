@@ -24,18 +24,16 @@ class HesabimScreen extends StatelessWidget {
 class HesabimEkrani extends StatelessWidget {
   const HesabimEkrani({super.key});
 
-  // Kullanıcı bilgilerini simüle eden değişkenler
-  final String adSoyad = "Ekrem İmamoglu";
-  final String email = "imam@example.com";
+  final String adSoyad = "Ahmet Demir";
+  final String email = "ahmet@example.com";
   final String telefon = "+90 555 123 45 67";
   final String dogumTarihi = "01.01.2000";
-  final String profilResmiUrl = "https://via.placeholder.com/150";
-  final String kullaniciAdi = "imamoğluEkrem34"; // Added username variable
+  final String kullaniciAdi = "ahmetdemir34";
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEAE1C8),
+      backgroundColor: const Color(0xFFF5F2E8), // Güncellenmiş renk
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -44,7 +42,6 @@ class HesabimEkrani extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 20),
-                // Profile Header
                 Center(
                   child: Column(
                     children: [
@@ -63,9 +60,10 @@ class HesabimEkrani extends StatelessWidget {
                             ),
                           ],
                         ),
-                        child: CircleAvatar(
-                          radius: 60,
-                          backgroundImage: NetworkImage(profilResmiUrl),
+                        child: const Icon(
+                          Icons.person,
+                          size: 120,
+                          color: Color(0xFF2C6E49),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -108,8 +106,6 @@ class HesabimEkrani extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 30),
-
-                // Information Cards Section
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -136,25 +132,20 @@ class HesabimEkrani extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                       bilgiKart("Ad Soyad", adSoyad, Icons.person),
-                      bilgiKart("Kullanıcı Adı", kullaniciAdi,
-                          Icons.alternate_email), // Added username card
+                      bilgiKart("Kullanıcı Adı", kullaniciAdi, Icons.alternate_email),
                       bilgiKart("E-posta", email, Icons.email),
                       bilgiKart("Telefon", telefon, Icons.phone),
                       bilgiKart("Doğum Tarihi", dogumTarihi, Icons.cake),
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 24),
-
-                // Action Buttons
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed:
-                            () {}, // Düzenleme ekranına yönlendirme eklenebilir
+                        onPressed: () {},
                         icon: const Icon(Icons.edit, color: Colors.white),
                         label: const Text(
                           "Bilgileri Düzenle",
@@ -171,10 +162,7 @@ class HesabimEkrani extends StatelessWidget {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 16),
-
-                // Additional Options
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -189,41 +177,15 @@ class HesabimEkrani extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      menuItem(
-                        context,
-                        "Adreslerim",
-                        Icons.location_on,
-                        () {/* Adreslerim sayfasına yönlendirme */},
-                      ),
+                      menuItem(context, "Adreslerim", Icons.location_on, () {}),
                       const Divider(height: 1),
-                      menuItem(
-                        context,
-                        "Siparişlerim",
-                        Icons.shopping_bag,
-                        () {/* Siparişlerim sayfasına yönlendirme */},
-                      ),
+                      menuItem(context, "Siparişlerim", Icons.shopping_bag, () {}),
                       const Divider(height: 1),
-                      menuItem(
-                        context,
-                        "Favorilerim",
-                        Icons.favorite,
-                        () {/* Favorilerim sayfasına yönlendirme */},
-                      ),
+                      menuItem(context, "Favorilerim", Icons.favorite, () {}),
                       const Divider(height: 1),
-                      menuItem(
-                        context,
-                        "Ayarlar",
-                        Icons.settings,
-                        () {/* Ayarlar sayfasına yönlendirme */},
-                      ),
+                      menuItem(context, "Ayarlar", Icons.settings, () {}),
                       const Divider(height: 1),
-                      menuItem(
-                        context,
-                        "Çıkış Yap",
-                        Icons.logout,
-                        () {/* Çıkış işlemi */},
-                        textColor: Colors.red,
-                      ),
+                      menuItem(context, "Çıkış Yap", Icons.logout, () {}, textColor: Colors.red),
                     ],
                   ),
                 ),
@@ -275,8 +237,7 @@ class HesabimEkrani extends StatelessWidget {
     );
   }
 
-  Widget menuItem(
-      BuildContext context, String title, IconData icon, VoidCallback onTap,
+  Widget menuItem(BuildContext context, String title, IconData icon, VoidCallback onTap,
       {Color? textColor}) {
     return InkWell(
       onTap: onTap,
@@ -291,7 +252,7 @@ class HesabimEkrani extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
-                color: textColor,
+                color: textColor ?? Colors.black,
               ),
             ),
             const Spacer(),

@@ -31,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const HesabimScreen(),
     const TakvimScreen(),
     const DerslerScreen(),
-    const TarimKredisiScreen(),
+    const TarimKredisiApp(),
     const MalzemelerScreen(),
     const YapilacaklarScreen(),
     const GaleriScreen(),
@@ -79,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_titles[_selectedIndex]),
-        backgroundColor: const Color.fromARGB(255, 156, 97, 20),
+        backgroundColor: const Color(0xFF4C7C46), // AppBar rengini değiştirdik
         elevation: 0,
         actions: [
           IconButton(
@@ -93,7 +93,8 @@ class _HomeScreenState extends State<HomeScreen> {
         currentIndex: _selectedIndex < 4 ? _selectedIndex : 0,
         onTap: _onTabSelected,
         type: BottomNavigationBarType.fixed,
-        backgroundColor: const Color.fromARGB(255, 156, 97, 20),
+        backgroundColor:
+            const Color(0xFF4C7C46), // BottomNavigationBar rengini değiştirdik
         selectedItemColor: const Color.fromARGB(255, 9, 77, 0),
         unselectedItemColor: Colors.white,
         showUnselectedLabels: true,

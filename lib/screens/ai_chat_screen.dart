@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
-// 👇 ChatMessage sınıfı artık dışarıda tanımlı
+// 👇 ChatMessage sınıfı dışarıda tanımlı
 class ChatMessage {
   final String text;
   final bool isUser;
@@ -48,31 +48,30 @@ class _AiChatScreenState extends State<AiChatScreen> {
   }
 
   void _sendMessage() {
-  final text = _controller.text.trim();
-  if (text.isEmpty) return;
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
 
-  setState(() {
-    _messages.add(ChatMessage(text: text, isUser: true));
-    _isLoading = true;
-  });
-
-  _controller.clear();
-  _scrollToBottom();
-
-  Future.delayed(const Duration(seconds: 1), () {
     setState(() {
-      _messages.add(ChatMessage(
-        text: _selectedImage != null
-            ? "Görselle birlikte gelen soruya cevabım: '$text' oldukça ilginç!"
-            : "Cevabım: '$text' hakkında düşündüğüm şey şu olabilir...",
-        isUser: false,
-      ));
-      _isLoading = false;
+      _messages.add(ChatMessage(text: text, isUser: true));
+      _isLoading = true;
     });
-    _scrollToBottom();
-  });
-}
 
+    _controller.clear();
+    _scrollToBottom();
+
+    Future.delayed(const Duration(seconds: 1), () {
+      setState(() {
+        _messages.add(ChatMessage(
+          text: _selectedImage != null
+              ? "Görselle birlikte gelen soruya cevabım: '$text' oldukça ilginç!"
+              : "Cevabım: '$text' hakkında düşündüğüm şey şu olabilir...",
+          isUser: false,
+        ));
+        _isLoading = false;
+      });
+      _scrollToBottom();
+    });
+  }
 
   Future<void> _pickImage(ImageSource source) async {
     try {
@@ -162,13 +161,6 @@ class _AiChatScreenState extends State<AiChatScreen> {
           "Yapay Zekâ Asistanı",
           style: TextStyle(color: Colors.white),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.image, color: Colors.white),
-            onPressed: _showImageOptions,
-            tooltip: "Görsel Ekle",
-          ),
-        ],
         backgroundColor: primaryColor,
         elevation: 2,
       ),
@@ -330,6 +322,23 @@ class _AiChatScreenState extends State<AiChatScreen> {
               ),
               child: Row(
                 children: [
+                  Material(
+                    color: secondaryColor.withOpacity(0.6),
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: _showImageOptions,
+                      child: Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Icon(
+                          Icons.image,
+                          color: primaryColor,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: TextField(
                       controller: _controller,

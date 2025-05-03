@@ -51,8 +51,6 @@ class _YapilacaklarScreenState extends State<YapilacaklarScreen> {
   void _toggleTask(int index) {
     setState(() {
       _tasks[index].completed = !_tasks[index].completed;
-      
-      // Optional: Move completed tasks to the bottom
       if (_tasks[index].completed) {
         final task = _tasks.removeAt(index);
         _tasks.add(task);
@@ -62,11 +60,11 @@ class _YapilacaklarScreenState extends State<YapilacaklarScreen> {
 
   void _removeTask(int index) {
     final removedTask = _tasks[index];
-    
+
     setState(() {
       _tasks.removeAt(index);
     });
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${removedTask.text} silindi'),
@@ -97,6 +95,7 @@ class _YapilacaklarScreenState extends State<YapilacaklarScreen> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
+        backgroundColor: const Color(0xFFF5F2E8), // Arka plan rengi burada
         appBar: AppBar(
           title: const Text('Yapılacaklar Listesi'),
           actions: [

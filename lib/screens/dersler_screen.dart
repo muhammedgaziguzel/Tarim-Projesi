@@ -16,6 +16,7 @@ class DerslerScreen extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
         visualDensity: VisualDensity.adaptivePlatformDensity,
+        scaffoldBackgroundColor: const Color(0xFFF5F2E8), // Arka plan rengi
       ),
       home: const DerslerEkrani(),
     );
@@ -30,25 +31,66 @@ class DerslerEkrani extends StatefulWidget {
 }
 
 class _DerslerEkraniState extends State<DerslerEkrani> {
-  // Move data to a separate class or service in a real app
   final List<Map<String, String>> videolar = const [
     {
-      'title': 'Organik Tarımın Temelleri',
-      'description': 'Bu derste organik tarımın temel prensiplerini öğreneceksiniz.',
-      'thumbnail': 'https://img.youtube.com/vi/dQw4w9WgXcQ/0.jpg',
-      'videoId': 'dQw4w9WgXcQ'
+      'title': 'Organik Tarım Nedir?',
+      'description': 'Organik tarımın tanımı, faydaları ve nasıl yapıldığı hakkında temel bilgiler.',
+      'thumbnail': 'https://img.youtube.com/vi/yKgrq62bF3k/0.jpg',
+      'videoId': 'yKgrq62bF3k',
     },
     {
-      'title': 'Toprak Analizi Nasıl Yapılır?',
-      'description': 'Toprak analizi yapmanın adımlarını ve önemini anlatan kapsamlı bir ders.',
-      'thumbnail': 'https://img.youtube.com/vi/tgbNymZ7vqY/0.jpg',
-      'videoId': 'tgbNymZ7vqY'
+      'title': 'Toprak Hazırlığı Nasıl Yapılır?',
+      'description': 'Verimli bir üretim için toprak hazırlama adımları anlatılmaktadır.',
+      'thumbnail': 'https://img.youtube.com/vi/Qi6N8v1aYgg/0.jpg',
+      'videoId': 'Qi6N8v1aYgg',
     },
     {
-      'title': 'Ekolojik Tarım Yöntemleri',
-      'description': 'Sürdürülebilir ve ekolojik tarım uygulamaları hakkında bilgiler.',
-      'thumbnail': 'https://img.youtube.com/vi/J8vz1D_L_OE/0.jpg',
-      'videoId': 'J8vz1D_L_OE'
+      'title': 'Tarımda Damla Sulama Sistemi',
+      'description': 'Damla sulama sisteminin kurulumu ve avantajları.',
+      'thumbnail': 'https://img.youtube.com/vi/G_o_1HTFBkQ/0.jpg',
+      'videoId': 'G_o_1HTFBkQ',
+    },
+    {
+      'title': 'Tarım Teknolojileri Nelerdir?',
+      'description': 'Modern tarımda kullanılan teknolojiler ve makineler üzerine genel bakış.',
+      'thumbnail': 'https://img.youtube.com/vi/DGCvCcmVQ6o/0.jpg',
+      'videoId': 'DGCvCcmVQ6o',
+    },
+    {
+      'title': 'Tarımda İyi Tarım Uygulamaları',
+      'description': 'Gıda güvenliği ve çevreye duyarlı üretim için iyi tarım uygulamaları.',
+      'thumbnail': 'https://img.youtube.com/vi/0bb0ptv9gr8/0.jpg',
+      'videoId': '0bb0ptv9gr8',
+    },
+    {
+      'title': 'Fide Dikimi Nasıl Yapılır?',
+      'description': 'Sebze ve meyve fidesi dikim teknikleri ve dikkat edilmesi gerekenler.',
+      'thumbnail': 'https://img.youtube.com/vi/I0KX8nAgP7Q/0.jpg',
+      'videoId': 'I0KX8nAgP7Q',
+    },
+    {
+      'title': 'Tarımsal Üretimde Gübrenin Önemi',
+      'description': 'Gübre çeşitleri, uygulama yöntemleri ve verimliliğe etkileri.',
+      'thumbnail': 'https://img.youtube.com/vi/LNfKDSlCzzA/0.jpg',
+      'videoId': 'LNfKDSlCzzA',
+    },
+    {
+      'title': 'Meyvecilikte Budama Teknikleri',
+      'description': 'Ağaç sağlığı ve verim için doğru budama yöntemleri.',
+      'thumbnail': 'https://img.youtube.com/vi/BtzFxOBci4Y/0.jpg',
+      'videoId': 'BtzFxOBci4Y',
+    },
+    {
+      'title': 'Tarımda Zararlı Mücadelesi',
+      'description': 'Zararlılarla biyolojik ve kimyasal mücadele yöntemleri.',
+      'thumbnail': 'https://img.youtube.com/vi/fMdd1wPj0rU/0.jpg',
+      'videoId': 'fMdd1wPj0rU',
+    },
+    {
+      'title': 'Tarımsal Sulama Teknikleri',
+      'description': 'Tarımda kullanılan sulama yöntemleri ve doğru su yönetimi.',
+      'thumbnail': 'https://img.youtube.com/vi/bJqelXZK0IE/0.jpg',
+      'videoId': 'bJqelXZK0IE',
     },
   ];
 
@@ -61,7 +103,6 @@ class _DerslerEkraniState extends State<DerslerEkrani> {
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              // Implement search functionality
               showSearch(
                 context: context,
                 delegate: DersArama(videolar: videolar),
@@ -70,7 +111,7 @@ class _DerslerEkraniState extends State<DerslerEkrani> {
           ),
         ],
       ),
-      body: videolar.isEmpty 
+      body: videolar.isEmpty
           ? const Center(child: Text('Henüz ders bulunmamaktadır.'))
           : ListView.builder(
               itemCount: videolar.length,
@@ -106,9 +147,7 @@ class _DerslerEkraniState extends State<DerslerEkrani> {
                               },
                               loadingBuilder: (context, child, loadingProgress) {
                                 if (loadingProgress == null) return child;
-                                return const Center(
-                                  child: CircularProgressIndicator(),
-                                );
+                                return const Center(child: CircularProgressIndicator());
                               },
                             ),
                           ),
@@ -122,20 +161,14 @@ class _DerslerEkraniState extends State<DerslerEkrani> {
                               children: [
                                 Text(
                                   video['title']!,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                                 ),
                                 const SizedBox(height: 5),
                                 Text(
                                   video['description'] ?? '',
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 14,
-                                  ),
+                                  style: const TextStyle(color: Colors.grey, fontSize: 14),
                                 ),
                               ],
                             ),
@@ -151,7 +184,6 @@ class _DerslerEkraniState extends State<DerslerEkrani> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Implement functionality to add new videos or refresh content
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Yeni içerikler yükleniyor...')),
           );
@@ -168,8 +200,8 @@ class VideoDetayEkrani extends StatefulWidget {
   final String description;
 
   const VideoDetayEkrani({
-    super.key, 
-    required this.videoId, 
+    super.key,
+    required this.videoId,
     required this.title,
     required this.description,
   });
@@ -222,9 +254,6 @@ class _VideoDetayEkraniState extends State<VideoDetayEkrani> {
           playedColor: Colors.green,
           handleColor: Colors.greenAccent,
         ),
-        onReady: () {
-          // Ready callback
-        },
       ),
       builder: (context, player) {
         return Scaffold(
@@ -240,10 +269,7 @@ class _VideoDetayEkraniState extends State<VideoDetayEkrani> {
                   children: [
                     Text(
                       widget.title,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     Text(widget.description),
@@ -253,10 +279,7 @@ class _VideoDetayEkraniState extends State<VideoDetayEkrani> {
                   ],
                 ),
               ),
-              // Notes section
-              Expanded(
-                child: _buildNotes(),
-              ),
+              Expanded(child: _buildNotes()),
             ],
           ),
         );
@@ -281,7 +304,6 @@ class _VideoDetayEkraniState extends State<VideoDetayEkrani> {
           icon: const Icon(Icons.share),
           label: const Text('Paylaş'),
           onPressed: () {
-            // Implement share functionality
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Paylaşım özelliği yakında eklenecek')),
             );
@@ -291,7 +313,6 @@ class _VideoDetayEkraniState extends State<VideoDetayEkrani> {
           icon: const Icon(Icons.download),
           label: const Text('İndir'),
           onPressed: () {
-            // Implement download functionality
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('İndirme özelliği yakında eklenecek')),
             );
@@ -309,10 +330,7 @@ class _VideoDetayEkraniState extends State<VideoDetayEkrani> {
         children: [
           const Text(
             'Notlarım',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Expanded(
@@ -361,8 +379,7 @@ class DersArama extends SearchDelegate<String> {
   @override
   Widget buildResults(BuildContext context) {
     final results = videolar
-        .where((video) =>
-            video['title']!.toLowerCase().contains(query.toLowerCase()))
+        .where((video) => video['title']!.toLowerCase().contains(query.toLowerCase()))
         .toList();
 
     return _buildSearchResults(context, results);
@@ -371,14 +388,11 @@ class DersArama extends SearchDelegate<String> {
   @override
   Widget buildSuggestions(BuildContext context) {
     if (query.isEmpty) {
-      return const Center(
-        child: Text('Ders aramak için yazın...'),
-      );
+      return const Center(child: Text('Ders aramak için yazın...'));
     }
 
     final suggestions = videolar
-        .where((video) =>
-            video['title']!.toLowerCase().contains(query.toLowerCase()))
+        .where((video) => video['title']!.toLowerCase().contains(query.toLowerCase()))
         .toList();
 
     return _buildSearchResults(context, suggestions);
@@ -395,9 +409,7 @@ class DersArama extends SearchDelegate<String> {
             child: Image.network(
               video['thumbnail']!,
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return const Icon(Icons.error);
-              },
+              errorBuilder: (context, error, stackTrace) => const Icon(Icons.error),
             ),
           ),
           title: Text(video['title']!),
@@ -420,5 +432,3 @@ class DersArama extends SearchDelegate<String> {
     );
   }
 }
-
-

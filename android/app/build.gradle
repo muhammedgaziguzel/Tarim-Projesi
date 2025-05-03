@@ -24,7 +24,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.tarim_proje"
-        minSdk = 23  // ✅ minSdk 21 yerine 23 yapıldı
+        minSdk = 26  // ✅ minSdk 21 yerine 26 yapıldı
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

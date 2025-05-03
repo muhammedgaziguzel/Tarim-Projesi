@@ -11,28 +11,28 @@ class _MalzemelerScreenState extends State<MalzemelerScreen> {
   final List<Map<String, dynamic>> malzemeler = const [
     {
       'name': 'Traktör',
-      'image': 'https://example.com/traktor.jpg',
+      'image': 'https://www.deere.com.tr/assets/images/6m180_r2g079731_large_large_10b025e32822ce8d12dabace57a94c1e7e18a8c7.png',
       'description': 'Tarımda kullanılan güçlü bir motorlu araç.',
       'price': '150,000 TL',
       'categories': ['Motorlu Araçlar', 'Büyük Ekipmanlar'],
     },
     {
       'name': 'Sulama Sistemi',
-      'image': 'https://example.com/sulama.jpg',
+      'image': 'https://cdn.wikifarmer.com/images/detailed/2024/09/Sulama-Sistemi-Secerken-Dikkat-Edilmesi-Gereken-Faktorler.jpg',
       'description': 'Bitkilerin düzenli sulanmasını sağlayan sistem.',
       'price': '25,000 TL',
       'categories': ['Sulama', 'Altyapı Sistemleri'],
     },
     {
       'name': 'Tırmık',
-      'image': 'https://example.com/tirmik.jpg',
+      'image': 'https://cdn.tekzen.com.tr/images/product/agromak/820405/dirgen-4-disli-f-6321_330x330_1.jpg',
       'description': 'Toprağı düzeltmek ve havalandırmak için kullanılır.',
       'price': '850 TL',
       'categories': ['El Aletleri', 'Toprak İşleme'],
     },
     {
       'name': 'Çapa Makinesi',
-      'image': 'https://example.com/capa.jpg',
+      'image': 'https://ideacdn.net/idea/nc/83/myassets/products/012/wwwww.jpg?revision=1742375123',
       'description': 'Hassas toprak işlemesi için ideal elektrikli makine.',
       'price': '12,500 TL',
       'categories': ['Motorlu Araçlar', 'Toprak İşleme'],
@@ -65,7 +65,9 @@ class _MalzemelerScreenState extends State<MalzemelerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F2E8),
       appBar: AppBar(
+        backgroundColor: const Color(0xFFF5F2E8),
         title: const Text('Tarım Malzemeleri'),
         actions: [
           IconButton(
@@ -81,7 +83,6 @@ class _MalzemelerScreenState extends State<MalzemelerScreen> {
       ),
       body: Column(
         children: [
-          // Category filter
           Container(
             height: 50,
             padding: const EdgeInsets.symmetric(vertical: 8),
@@ -104,8 +105,6 @@ class _MalzemelerScreenState extends State<MalzemelerScreen> {
               },
             ),
           ),
-          
-          // Equipment list
           Expanded(
             child: filteredMalzemeler.isEmpty
                 ? const Center(child: Text('Bu kategoride malzeme bulunamadı.'))
@@ -133,7 +132,6 @@ class _MalzemelerScreenState extends State<MalzemelerScreen> {
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Image with error handling
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(8),
                                   child: SizedBox(
@@ -223,7 +221,6 @@ class _MalzemelerScreenState extends State<MalzemelerScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Implement functionality to add equipment or view favorites
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Favorilere eklendi!')),
           );
@@ -242,13 +239,14 @@ class MalzemeDetayScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F2E8),
       appBar: AppBar(
+        backgroundColor: const Color(0xFFF5F2E8),
         title: Text(malzeme['name']!),
         actions: [
           IconButton(
             icon: const Icon(Icons.share),
             onPressed: () {
-              // Implement share functionality
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Paylaşım özelliği yakında eklenecek')),
               );
@@ -257,7 +255,6 @@ class MalzemeDetayScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.favorite_border),
             onPressed: () {
-              // Implement favorite functionality
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Favorilere eklendi')),
               );
@@ -269,7 +266,6 @@ class MalzemeDetayScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Hero image
             SizedBox(
               width: double.infinity,
               height: 250,
@@ -362,7 +358,6 @@ class MalzemeDetayScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: ElevatedButton(
           onPressed: () {
-            // Implement buy or contact functionality
             showModalBottomSheet(
               context: context,
               builder: (context) => Container(
@@ -384,7 +379,6 @@ class MalzemeDetayScreen extends StatelessWidget {
                       title: const Text('Telefon'),
                       subtitle: const Text('+90 555 123 4567'),
                       onTap: () {
-                        // Implement call functionality
                         Navigator.pop(context);
                       },
                     ),
@@ -393,7 +387,6 @@ class MalzemeDetayScreen extends StatelessWidget {
                       title: const Text('E-posta'),
                       subtitle: const Text('info@tarimmalzemeleri.com'),
                       onTap: () {
-                        // Implement email functionality
                         Navigator.pop(context);
                       },
                     ),
