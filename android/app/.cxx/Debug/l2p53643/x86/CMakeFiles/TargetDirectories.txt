@@ -1,0 +1,2 @@
+C:/Users/Bahcekapili/Tarim-Projesi/android/app/.cxx/Debug/l2p53643/x86/CMakeFiles/edit_cache.dir
+C:/Users/Bahcekapili/Tarim-Projesi/android/app/.cxx/Debug/l2p53643/x86/CMakeFiles/rebuild_cache.dir

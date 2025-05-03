@@ -65,10 +65,29 @@ class _HesabimScreenState extends State<HesabimScreen> {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2C6E49)),
         useMaterial3: true,
       ),
-      home: Scaffold(
-        backgroundColor: const Color(0xFFEAE1C8),
-        body: SafeArea(
-          child: SingleChildScrollView(
+
+      home: const HesabimEkrani(),
+    );
+  }
+}
+
+class HesabimEkrani extends StatelessWidget {
+  const HesabimEkrani({super.key});
+
+  final String adSoyad = "Ahmet Demir";
+  final String email = "ahmet@example.com";
+  final String telefon = "+90 555 123 45 67";
+  final String dogumTarihi = "01.01.2000";
+  final String kullaniciAdi = "ahmetdemir34";
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F2E8), // Güncellenmiş renk
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -92,10 +111,12 @@ class _HesabimScreenState extends State<HesabimScreen> {
                             ),
                           ],
                         ),
-                        child: const CircleAvatar(
-                          radius: 60,
-                          backgroundImage:
-                              NetworkImage("https://via.placeholder.com/150"),
+
+                        child: const Icon(
+                          Icons.person,
+                          size: 120,
+                          color: Color(0xFF2C6E49),
+
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -127,8 +148,6 @@ class _HesabimScreenState extends State<HesabimScreen> {
                   ),
                 ),
                 const SizedBox(height: 30),
-
-                // Bilgi Kartları
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -154,25 +173,25 @@ class _HesabimScreenState extends State<HesabimScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      bilgiKart("Ad Soyad", "$_name $_surname", Icons.person),
-                      bilgiKart("E-posta", _email, Icons.email),
-                      if (_phone.isNotEmpty)
-                        bilgiKart("Telefon", _phone, Icons.phone),
+                      bilgiKart("Ad Soyad", adSoyad, Icons.person),
+                      bilgiKart("Kullanıcı Adı", kullaniciAdi, Icons.alternate_email),
+                      bilgiKart("E-posta", email, Icons.email),
+                      bilgiKart("Telefon", telefon, Icons.phone),
+                      bilgiKart("Doğum Tarihi", dogumTarihi, Icons.cake),
+
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 24),
 
-                // Buton
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () {
-                          // Düzenleme sayfasına yönlendirme
-                        },
+
+                        onPressed: () {},
+
                         icon: const Icon(Icons.edit, color: Colors.white),
                         label: const Text(
                           "Bilgileri Düzenle",
@@ -189,10 +208,8 @@ class _HesabimScreenState extends State<HesabimScreen> {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 16),
 
-                // Menü Seçenekleri
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -209,13 +226,14 @@ class _HesabimScreenState extends State<HesabimScreen> {
                     children: [
                       menuItem(context, "Adreslerim", Icons.location_on, () {}),
                       const Divider(height: 1),
-                      menuItem(
-                          context, "Siparişlerim", Icons.shopping_bag, () {}),
+                      menuItem(context, "Siparişlerim", Icons.shopping_bag, () {}),
+
                       const Divider(height: 1),
                       menuItem(context, "Favorilerim", Icons.favorite, () {}),
                       const Divider(height: 1),
                       menuItem(context, "Ayarlar", Icons.settings, () {}),
                       const Divider(height: 1),
+
                       menuItem(
                         context,
                         "Çıkış Yap",
@@ -282,6 +300,7 @@ class _HesabimScreenState extends State<HesabimScreen> {
       ),
     );
   }
+
 
   Widget menuItem(
     BuildContext context,

@@ -47,7 +47,7 @@ class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: const Color(0xFFF5F2E8), // Updated background color
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -210,7 +210,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: const Color(0xFFF5F2E8), // Updated background color
       appBar: AppBar(
         title: const Text('Kayıt Ol'),
         backgroundColor: Colors.transparent,
@@ -382,7 +382,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: const Color(0xFFF5F2E8), // Updated background color
       appBar: AppBar(
         title: const Text('Giriş Yap'),
         backgroundColor: Colors.transparent,
