@@ -3,28 +3,19 @@ import '../services/todo_service.dart';
 
 class YapilacaklarScreen extends StatefulWidget {
   const YapilacaklarScreen({super.key});
-
+  
   @override
-  _YapilacaklarScreenState createState() => _YapilacaklarScreenState();
+  YapilacaklarScreenState createState() => YapilacaklarScreenState();
 }
 
-class _YapilacaklarScreenState extends State<YapilacaklarScreen> {
-  final List<Task> _tasks = [];
+class YapilacaklarScreenState extends State<YapilacaklarScreen> {
+  final List<Map<String, dynamic>> _tasks = [];
   final TextEditingController _controller = TextEditingController();
-  final FocusNode _inputFocusNode = FocusNode();
-  bool _isEditing = false;
-  int _editingIndex = -1;
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    _inputFocusNode.dispose();
-    super.dispose();
-  }
-
-
   final TodoService _todoService = TodoService();
   final int _userId = 1; // Geçici olarak sabit bir kullanıcı ID
+  
+  bool _isLoading = true;
+  bool _isAdding = false;
 
   @override
   void initState() {
@@ -33,200 +24,269 @@ class _YapilacaklarScreenState extends State<YapilacaklarScreen> {
   }
 
   Future<void> _loadTasks() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
     try {
       final todos = await _todoService.fetchTodos(_userId);
       setState(() {
         _tasks.clear();
-        _tasks.addAll(todos.map<String>((e) => e['title']));
+        _tasks.addAll(todos as Iterable<Map<String, dynamic>>);
+        _isLoading = false;
       });
     } catch (e) {
-      print('Görevler alınırken hata oluştu: $e');
+      setState(() {
+        _isLoading = false;
+      });
+      _showErrorSnackBar('Görevler alınırken hata oluştu: $e');
     }
   }
 
   void _addTask() async {
-    if (_controller.text.isNotEmpty) {
-      final newTask = _controller.text;
-      try {
-        await _todoService.addTodo(newTask, _userId);
-        _controller.clear();
-        _loadTasks(); // Yeni görevden sonra listeyi yeniden yükle
-      } catch (e) {
-        print('Görev eklenirken hata oluştu: $e');
-      }
+    if (_controller.text.isEmpty) return;
+    
+    final newTask = _controller.text;
+    _controller.clear();
+    
+    setState(() {
+      _isAdding = true;
+    });
+    
+    try {
+      await _todoService.addTodo(newTask, _userId);
+      await _loadTasks();
+      _showSuccessSnackBar('Görev başarıyla eklendi');
+    } catch (e) {
+      _showErrorSnackBar('Görev eklenirken hata oluştu: $e');
+    } finally {
+      setState(() {
+        _isAdding = false;
+      });
     }
   }
 
-  void _editTask(int index) {
-    setState(() {
-      _isEditing = true;
-      _editingIndex = index;
-      _controller.text = _tasks[index].text;
-      _inputFocusNode.requestFocus();
-    });
-  }
-
-  void _toggleTask(int index) {
-    setState(() {
-      _tasks[index].completed = !_tasks[index].completed;
-      if (_tasks[index].completed) {
-        final task = _tasks.removeAt(index);
-        _tasks.add(task);
-      }
-    });
-  }
-
-  void _removeTask(int index) {
-    final removedTask = _tasks[index];
-
+  Future<void> _removeTask(int index) async {
+    final taskToRemove = _tasks[index];
     setState(() {
       _tasks.removeAt(index);
     });
-
+    
+    // Kullanıcıya bildirim göster
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${removedTask.text} silindi'),
+        content: Text('${taskToRemove['title']} silindi'),
+        backgroundColor: Colors.orange,
         action: SnackBarAction(
           label: 'Geri Al',
+          textColor: Colors.white,
           onPressed: () {
             setState(() {
-              _tasks.insert(index, removedTask);
+              _tasks.insert(index, taskToRemove);
             });
           },
         ),
-        duration: const Duration(seconds: 2),
+      ),
+    );
+    
+    // API'de silme endpoint'i yok olduğu için burada yalnızca UI güncellemesi yapıyoruz
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
       ),
     );
   }
 
-  void _showSnackBar(String message) {
+  void _showSuccessSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        duration: const Duration(seconds: 2),
+        backgroundColor: Colors.green,
       ),
     );
-
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF5F2E8), // Arka plan rengi burada
-        appBar: AppBar(
-          title: const Text('Yapılacaklar Listesi'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.delete_sweep),
-              tooltip: 'Tamamlananları Temizle',
-              onPressed: _tasks.any((task) => task.completed)
-                  ? () {
-                      setState(() {
-                        _tasks.removeWhere((task) => task.completed);
-                      });
-                      _showSnackBar('Tamamlanan görevler silindi');
-                    }
-                  : null,
-            ),
-          ],
-        ),
-        body: Column(
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F2E8), // İstediğiniz arka plan rengi
+      body: Padding(
+        padding: const EdgeInsets.only(top: 40.0, left: 16.0, right: 16.0, bottom: 16.0),
+        child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      focusNode: _inputFocusNode,
-                      decoration: InputDecoration(
-                        hintText: _isEditing ? 'Görevi düzenle' : 'Yeni görev ekle',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        filled: true,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                      ),
-                      onSubmitted: (_) => _addTask(),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: _addTask,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.all(16),
-                    ),
-                    child: Icon(
-                      _isEditing ? Icons.save : Icons.add,
-                    ),
+            // Yeni görev ekleme alanı
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
-            ),
-            Expanded(
-              child: _tasks.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'Henüz görev eklenmedi',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _controller,
+                        decoration: const InputDecoration(
+                          hintText: "Yeni görev ekle...",
+                          border: InputBorder.none,
                         ),
+                        onSubmitted: (_) => _addTask(),
+                      ),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: _isAdding ? null : _addTask,
+                      icon: _isAdding 
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.add),
+                      label: Text(_isAdding ? "Ekleniyor..." : "Ekle"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF556B2F), // Zeytin yeşili renk
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            
+            const SizedBox(height: 20),
+            
+            // Liste başlığı - yenileme butonu ile birlikte
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Görevlerim (${_tasks.length})",
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.refresh, color: Colors.black54),
+                  onPressed: _loadTasks,
+                  tooltip: 'Listeyi Yenile',
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 10),
+            
+            // Görev listesi
+            Expanded(
+              child: _isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : _tasks.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.task_alt,
+                            size: 70,
+                            color: Colors.grey.withOpacity(0.5),
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            "Henüz görev eklenmemiş",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
                       ),
                     )
                   : ListView.builder(
                       itemCount: _tasks.length,
                       itemBuilder: (context, index) {
                         final task = _tasks[index];
-                        return Dismissible(
-                          key: ValueKey(task.id),
-                          background: Container(
-                            color: Colors.red,
-                            alignment: Alignment.centerRight,
-                            padding: const EdgeInsets.only(right: 20),
-                            child: const Icon(
-                              Icons.delete,
-                              color: Colors.white,
-                            ),
-                          ),
-                          direction: DismissDirection.endToStart,
-                          onDismissed: (_) => _removeTask(index),
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
                           child: Card(
-                            margin: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 4,
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            child: ListTile(
-                              leading: Checkbox(
-                                value: task.completed,
-                                onChanged: (_) => _toggleTask(index),
-                              ),
-                              title: Text(
-                                task.text,
-                                style: TextStyle(
-                                  decoration: task.completed
-                                      ? TextDecoration.lineThrough
-                                      : TextDecoration.none,
-                                  color: task.completed ? Colors.grey : Colors.black,
+                            child: Dismissible(
+                              key: Key(index.toString()),
+                              direction: DismissDirection.endToStart,
+                              background: Container(
+                                alignment: Alignment.centerRight,
+                                padding: const EdgeInsets.only(right: 20.0),
+                                decoration: BoxDecoration(
+                                  color: Colors.red,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(
+                                  Icons.delete,
+                                  color: Colors.white,
                                 ),
                               ),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.edit),
-                                    onPressed: task.completed ? null : () => _editTask(index),
-                                    color: Colors.blue,
+                              onDismissed: (direction) {
+                                _removeTask(index);
+                              },
+                              child: ListTile(
+                                contentPadding: const EdgeInsets.symmetric(
+                                  vertical: 8.0,
+                                  horizontal: 16.0,
+                                ),
+                                leading: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: Colors.blueAccent.withOpacity(0.1),
+                                    shape: BoxShape.circle,
                                   ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete),
-                                    onPressed: () => _removeTask(index),
-                                    color: Colors.red,
+                                  child: const Icon(
+                                    Icons.assignment_outlined,
+                                    color: Colors.blueAccent,
                                   ),
-                                ],
+                                ),
+                                title: Text(
+                                  task['title'],
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                subtitle: task['completed'] != null
+                                  ? Text(
+                                      task['completed'] ? "Tamamlandı" : "Devam ediyor",
+                                      style: TextStyle(
+                                        color: task['completed'] ? Colors.green : Colors.orange,
+                                        fontSize: 12,
+                                      ),
+                                    )
+                                  : null,
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                  onPressed: () => _removeTask(index),
+                                ),
                               ),
                             ),
                           ),
@@ -236,27 +296,91 @@ class _YapilacaklarScreenState extends State<YapilacaklarScreen> {
             ),
           ],
         ),
-        floatingActionButton: _tasks.isNotEmpty
-            ? FloatingActionButton(
-                onPressed: () {
-                  _inputFocusNode.requestFocus();
-                },
-                tooltip: 'Yeni Görev',
-                child: const Icon(Icons.add_task),
-              )
-            : null,
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            builder: (context) => Container(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "Yapılacaklar Listesi İstatistikleri",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildStatItem(
+                        "Toplam",
+                        _tasks.length.toString(),
+                        Icons.list,
+                        Colors.blue,
+                      ),
+                      _buildStatItem(
+                        "Tamamlanan",
+                        _tasks.where((task) => task['completed'] == true).length.toString(),
+                        Icons.check_circle,
+                        Colors.green,
+                      ),
+                      _buildStatItem(
+                        "Bekleyen",
+                        _tasks.where((task) => task['completed'] != true).length.toString(),
+                        Icons.pending_actions,
+                        Colors.orange,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+        backgroundColor: const Color(0xFF556B2F), // Zeytin yeşili renk
+        child: const Icon(Icons.analytics),
       ),
     );
   }
-}
 
-class Task {
-  final String id;
-  String text;
-  bool completed;
-
-  Task({
-    required this.text,
-    this.completed = false,
-  }) : id = DateTime.now().millisecondsSinceEpoch.toString();
+  Widget _buildStatItem(String title, String value, IconData icon, Color color) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            icon,
+            color: color,
+            size: 28,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          title,
+          style: TextStyle(
+            color: Colors.grey[600],
+          ),
+        ),
+      ],
+    );
+  }
 }
