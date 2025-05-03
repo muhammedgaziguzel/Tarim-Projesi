@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/todo_service.dart';
 
 class YapilacaklarScreen extends StatefulWidget {
   const YapilacaklarScreen({super.key});
@@ -21,21 +22,38 @@ class _YapilacaklarScreenState extends State<YapilacaklarScreen> {
     super.dispose();
   }
 
-  void _addTask() {
-    if (_controller.text.trim().isNotEmpty) {
+
+  final TodoService _todoService = TodoService();
+  final int _userId = 1; // Geçici olarak sabit bir kullanıcı ID
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTasks();
+  }
+
+  Future<void> _loadTasks() async {
+    try {
+      final todos = await _todoService.fetchTodos(_userId);
       setState(() {
-        if (_isEditing) {
-          _tasks[_editingIndex].text = _controller.text.trim();
-          _isEditing = false;
-          _editingIndex = -1;
-        } else {
-          _tasks.add(Task(text: _controller.text.trim()));
-        }
-        _controller.clear();
-        _inputFocusNode.requestFocus();
+        _tasks.clear();
+        _tasks.addAll(todos.map<String>((e) => e['title']));
       });
-    } else {
-      _showSnackBar('Görev metni boş olamaz');
+    } catch (e) {
+      print('Görevler alınırken hata oluştu: $e');
+    }
+  }
+
+  void _addTask() async {
+    if (_controller.text.isNotEmpty) {
+      final newTask = _controller.text;
+      try {
+        await _todoService.addTodo(newTask, _userId);
+        _controller.clear();
+        _loadTasks(); // Yeni görevden sonra listeyi yeniden yükle
+      } catch (e) {
+        print('Görev eklenirken hata oluştu: $e');
+      }
     }
   }
 
@@ -88,6 +106,7 @@ class _YapilacaklarScreenState extends State<YapilacaklarScreen> {
         duration: const Duration(seconds: 2),
       ),
     );
+
   }
 
   @override
