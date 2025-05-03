@@ -1,60 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:tarim_proje/services/auth_service.dart';
-import 'package:tarim_proje/screens/girisekrani_screen.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
-class HesabimScreen extends StatefulWidget {
-  const HesabimScreen({super.key});
-
-  @override
-  State<HesabimScreen> createState() => _HesabimScreenState();
+void main() {
+  runApp(const HesabimScreen());
 }
 
-class _HesabimScreenState extends State<HesabimScreen> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  late String _name = '';
-  late String _surname = '';
-  late String _email = '';
-  late String _phone = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _getUserData();
-  }
-
-  Future<void> _getUserData() async {
-    final user = _auth.currentUser;
-    if (user != null) {
-      try {
-        DocumentSnapshot userDoc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .get();
-
-        if (userDoc.exists) {
-          print("Veri çekildi: ${userDoc.data()}");
-
-          print("İsim: ${userDoc['isim']}");
-          print("Soyisim: ${userDoc['soyisim']}");
-          print("Telefon: ${userDoc['telefon']}");
-          print("E-posta: ${user.email}");
-
-          setState(() {
-            _name = userDoc['isim'] ?? 'Ad bulunamadı';
-            _surname = userDoc['soyisim'] ?? 'Soyad bulunamadı';
-            _phone = userDoc['telefon'] ?? 'Telefon bulunamadı';
-            _email = user.email ?? '';
-          });
-        } else {
-          print("Kullanıcı verisi bulunamadı");
-        }
-      } catch (e) {
-        print("Veri çekme hatası: $e");
-      }
-    }
-  }
+class HesabimScreen extends StatelessWidget {
+  const HesabimScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -65,10 +16,27 @@ class _HesabimScreenState extends State<HesabimScreen> {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2C6E49)),
         useMaterial3: true,
       ),
-      home: Scaffold(
-        backgroundColor: const Color(0xFFEAE1C8),
-        body: SafeArea(
-          child: SingleChildScrollView(
+      home: const HesabimEkrani(),
+    );
+  }
+}
+
+class HesabimEkrani extends StatelessWidget {
+  const HesabimEkrani({super.key});
+
+  final String adSoyad = "Hasan Akbaba";
+  final String email = "Akbabah10@gmail.com";
+  final String telefon = "+90 530 579 2039";
+  final String dogumTarihi = "04.01.2005";
+  final String kullaniciAdi = "Hasanakbaba0";
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F2E8),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -92,15 +60,15 @@ class _HesabimScreenState extends State<HesabimScreen> {
                             ),
                           ],
                         ),
-                        child: const CircleAvatar(
-                          radius: 60,
-                          backgroundImage:
-                              NetworkImage("https://via.placeholder.com/150"),
+                        child: const Icon(
+                          Icons.person,
+                          size: 120,
+                          color: Color.fromARGB(255, 65, 126, 195),
                         ),
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        "$_name $_surname",
+                        adSoyad,
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -110,11 +78,14 @@ class _HesabimScreenState extends State<HesabimScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.alternate_email,
-                              size: 16, color: Colors.grey[600]),
+                          Icon(
+                            Icons.alternate_email,
+                            size: 16,
+                            color: Colors.grey[600],
+                          ),
                           const SizedBox(width: 4),
                           Text(
-                            _email,
+                            kullaniciAdi,
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
@@ -123,12 +94,18 @@ class _HesabimScreenState extends State<HesabimScreen> {
                           ),
                         ],
                       ),
+                      const SizedBox(height: 4),
+                      Text(
+                        email,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[700],
+                        ),
+                      ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 30),
-
-                // Bilgi Kartları
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -154,25 +131,22 @@ class _HesabimScreenState extends State<HesabimScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      bilgiKart("Ad Soyad", "$_name $_surname", Icons.person),
-                      bilgiKart("E-posta", _email, Icons.email),
-                      if (_phone.isNotEmpty)
-                        bilgiKart("Telefon", _phone, Icons.phone),
+                      bilgiKart("Ad Soyad", adSoyad, Icons.person),
+                      bilgiKart(
+                          "Kullanıcı Adı", kullaniciAdi, Icons.alternate_email),
+                      bilgiKart("E-posta", email, Icons.email),
+                      bilgiKart("Telefon", telefon, Icons.phone),
+                      bilgiKart("Doğum Tarihi", dogumTarihi, Icons.cake),
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 24),
-
-                // Buton
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () {
-                          // Düzenleme sayfasına yönlendirme
-                        },
+                        onPressed: () {},
                         icon: const Icon(Icons.edit, color: Colors.white),
                         label: const Text(
                           "Bilgileri Düzenle",
@@ -189,10 +163,7 @@ class _HesabimScreenState extends State<HesabimScreen> {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 16),
-
-                // Menü Seçenekleri
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -216,22 +187,8 @@ class _HesabimScreenState extends State<HesabimScreen> {
                       const Divider(height: 1),
                       menuItem(context, "Ayarlar", Icons.settings, () {}),
                       const Divider(height: 1),
-                      menuItem(
-                        context,
-                        "Çıkış Yap",
-                        Icons.logout,
-                        () async {
-                          await AuthService().signOut();
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    const GirisekraniScreen()),
-                            (route) => false,
-                          );
-                        },
-                        textColor: Colors.red,
-                      ),
+                      menuItem(context, "Çıkış Yap", Icons.logout, () {},
+                          textColor: Colors.red),
                     ],
                   ),
                 ),
@@ -244,6 +201,14 @@ class _HesabimScreenState extends State<HesabimScreen> {
   }
 
   Widget bilgiKart(String baslik, String deger, IconData icon) {
+    final Map<IconData, Color> iconRenkleri = {
+      Icons.person: const Color.fromARGB(255, 60, 157, 202),
+      Icons.alternate_email: Colors.orange,
+      Icons.email: Colors.blue,
+      Icons.phone: Colors.green,
+      Icons.cake: Colors.pink,
+    };
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -251,10 +216,12 @@ class _HesabimScreenState extends State<HesabimScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFF2C6E49).withOpacity(0.1),
+              color: iconRenkleri[icon]?.withOpacity(0.1) ??
+                  Colors.grey.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: const Color(0xFF2C6E49), size: 22),
+            child:
+                Icon(icon, color: iconRenkleri[icon] ?? Colors.grey, size: 22),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -284,19 +251,23 @@ class _HesabimScreenState extends State<HesabimScreen> {
   }
 
   Widget menuItem(
-    BuildContext context,
-    String title,
-    IconData icon,
-    VoidCallback onTap, {
-    Color? textColor,
-  }) {
+      BuildContext context, String title, IconData icon, VoidCallback onTap,
+      {Color? textColor}) {
+    final Map<String, Color> menuRenkleri = {
+      "Adreslerim": Colors.deepPurple,
+      "Siparişlerim": Colors.brown,
+      "Favorilerim": Colors.red,
+      "Ayarlar": Colors.indigo,
+      "Çıkış Yap": Colors.red,
+    };
+
     return InkWell(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
-            Icon(icon, color: const Color(0xFF2C6E49)),
+            Icon(icon, color: menuRenkleri[title] ?? const Color(0xFF2C6E49)),
             const SizedBox(width: 16),
             Text(
               title,

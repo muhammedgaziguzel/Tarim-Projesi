@@ -20,7 +20,7 @@ class DrawerMenu extends StatelessWidget {
           children: <Widget>[
             const DrawerHeader(
               decoration: BoxDecoration(
-                color: Color(0xFF798C74), // Yeni renk
+                color: Color(0xFF798C74),
               ),
               child: Align(
                 alignment: Alignment.bottomLeft,
@@ -36,38 +36,44 @@ class DrawerMenu extends StatelessWidget {
             ),
             // Ana Menü
             ListTile(
-              leading: Icon(Icons.school, color: Color(0xFF798C74)),
+              leading: Icon(Icons.school,
+                  color: Colors.deepPurple), // Dersler: Bilgelik
               title: const Text('Dersler'),
               onTap: () => onItemTapped(0),
               selected: selectedIndex == 0,
             ),
             ListTile(
-              leading: Icon(Icons.monetization_on, color: Color(0xFF798C74)),
+              leading: Icon(Icons.monetization_on,
+                  color: Colors.green), // Tarım Kredisi: Para
               title: const Text('Tarım Kredisi'),
               onTap: () => onItemTapped(1),
               selected: selectedIndex == 1,
             ),
             ListTile(
-              leading: Icon(Icons.inventory, color: Color(0xFF798C74)),
+              leading: Icon(Icons.inventory,
+                  color: Colors.brown), // Malzemeler: Toprak/Depo hissi
               title: const Text('Malzemeler'),
               onTap: () => onItemTapped(2),
               selected: selectedIndex == 2,
             ),
             // Yeni Menü Öğeleri
             ListTile(
-              leading: Icon(Icons.list, color: Color(0xFF798C74)),
+              leading: Icon(Icons.list,
+                  color: Colors.orange), // Yapılacaklar: Uyarı/Renkli
               title: const Text('Yapılacaklar'),
               onTap: () => onItemTapped(3),
               selected: selectedIndex == 3,
             ),
             ListTile(
-              leading: Icon(Icons.photo_album, color: Color(0xFF798C74)),
+              leading: Icon(Icons.photo_album,
+                  color: Colors.blue), // Galeri: Görsellik
               title: const Text('Galeri'),
               onTap: () => onItemTapped(4),
               selected: selectedIndex == 4,
             ),
             ListTile(
-              leading: Icon(Icons.info, color: Color(0xFF798C74)),
+              leading: Icon(Icons.info,
+                  color: Colors.teal), // Bilgiler: Bilgilendirme
               title: const Text('Bilgiler'),
               onTap: () => onItemTapped(5),
               selected: selectedIndex == 5,
@@ -86,15 +92,15 @@ class DrawerMenu extends StatelessWidget {
               ),
             ),
             const ListTile(
-              leading: Icon(Icons.email, color: Color(0xFF798C74)),
+              leading: Icon(Icons.email, color: Colors.redAccent),
               title: Text('E-posta: support@tarim.com'),
             ),
             const ListTile(
-              leading: Icon(Icons.phone, color: Color(0xFF798C74)),
+              leading: Icon(Icons.phone, color: Colors.indigo),
               title: Text('Telefon: +90 123 456 78 90'),
             ),
             const ListTile(
-              leading: Icon(Icons.help_outline, color: Color(0xFF798C74)),
+              leading: Icon(Icons.help_outline, color: Colors.cyan),
               title: Text('Yardım & SSS'),
             ),
           ],
