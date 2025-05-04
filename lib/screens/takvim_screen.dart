@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'dart:ui';
-import '../services/calendar_firestore_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class TakvimScreen extends StatefulWidget {
+  const TakvimScreen({super.key});
+
   @override
   _TakvimScreenState createState() => _TakvimScreenState();
 }
@@ -12,7 +15,8 @@ class _TakvimScreenState extends State<TakvimScreen> {
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime focusedDay = DateTime.now();
   DateTime? selectedDay;
-  final CalendarFirestoreService _firestoreService = CalendarFirestoreService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final Map<DateTime, DayEntry> _dayEntries = {};
   final TextEditingController _noteController = TextEditingController();
   List<Offset?> _drawingPoints = [];
@@ -34,15 +38,31 @@ class _TakvimScreenState extends State<TakvimScreen> {
   }
 
   Future<void> _loadDayEntryFromFirestore(DateTime date) async {
-    final data = await _firestoreService.getDayEntry(date);
-    if (data != null) {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    final dateStr = '${date.year}-${date.month}-${date.day}';
+    final doc = await _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('takvim')
+        .doc(dateStr)
+        .get();
+
+    if (doc.exists) {
+      final data = doc.data() as Map<String, dynamic>;
       setState(() {
         _dayEntries[date] = DayEntry(
-          note: data['note'],
-          drawingPoints: List<Offset?>.from(data['drawingPoints']),
+          note: data['note'] ?? '',
+          drawingPoints: List<Offset?>.from(
+            (data['drawingPoints'] as List).map((point) {
+              if (point == null) return null;
+              return Offset(point['x'] as double, point['y'] as double);
+            }),
+          ),
         );
-        _noteController.text = data['note'];
-        _drawingPoints = List<Offset?>.from(data['drawingPoints']);
+        _noteController.text = data['note'] ?? '';
+        _drawingPoints = _dayEntries[date]!.drawingPoints;
       });
     } else {
       setState(() {
@@ -55,16 +75,40 @@ class _TakvimScreenState extends State<TakvimScreen> {
   Future<void> _saveDayEntry() async {
     if (selectedDay == null) return;
 
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    final dateStr =
+        '${selectedDay!.year}-${selectedDay!.month}-${selectedDay!.day}';
     final entry = DayEntry(
       note: _noteController.text,
       drawingPoints: _drawingPoints,
     );
 
-    await _firestoreService.saveDayEntry(selectedDay!, entry.note, entry.drawingPoints);
+    await _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('takvim')
+        .doc(dateStr)
+        .set({
+      'note': entry.note,
+      'drawingPoints': entry.drawingPoints.map((point) {
+        if (point == null) return null;
+        return {'x': point.dx, 'y': point.dy};
+      }).toList(),
+      'date': Timestamp.fromDate(selectedDay!),
+    });
 
     setState(() {
       _dayEntries[selectedDay!] = entry;
     });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Not kaydedildi'),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
 
   @override
@@ -73,7 +117,9 @@ class _TakvimScreenState extends State<TakvimScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Takvim'),
+        title: const Text('Takvim'),
+        backgroundColor: const Color(0xFF2C6E49),
+        foregroundColor: Colors.white,
       ),
       body: Column(
         children: [
@@ -92,26 +138,44 @@ class _TakvimScreenState extends State<TakvimScreen> {
             onPageChanged: (focusedDay) {
               this.focusedDay = focusedDay;
             },
+            calendarStyle: const CalendarStyle(
+              selectedDecoration: BoxDecoration(
+                color: Color(0xFF2C6E49),
+                shape: BoxShape.circle,
+              ),
+              todayDecoration: BoxDecoration(
+                color: Color(0xFF2C6E49),
+                shape: BoxShape.circle,
+              ),
+            ),
           ),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(16.0),
             child: TextField(
               controller: _noteController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Not ekle',
                 border: OutlineInputBorder(),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Color(0xFF2C6E49)),
+                ),
               ),
               maxLines: null,
             ),
           ),
-          SizedBox(
+          Container(
             width: 300,
             height: 200,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: GestureDetector(
               onPanUpdate: (details) {
                 setState(() {
                   RenderBox renderBox = context.findRenderObject() as RenderBox;
-                  _drawingPoints.add(renderBox.globalToLocal(details.globalPosition));
+                  _drawingPoints
+                      .add(renderBox.globalToLocal(details.globalPosition));
                 });
               },
               onPanEnd: (details) => _drawingPoints.add(null),
@@ -120,9 +184,17 @@ class _TakvimScreenState extends State<TakvimScreen> {
               ),
             ),
           ),
+          const SizedBox(height: 16),
           ElevatedButton(
             onPressed: _saveDayEntry,
-            child: Text('Kaydet'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2C6E49),
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+            ),
+            child: const Text(
+              'Kaydet',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -145,7 +217,7 @@ class DrawingPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.black
+      ..color = const Color(0xFF2C6E49)
       ..strokeWidth = 3.0
       ..strokeCap = StrokeCap.round;
 
