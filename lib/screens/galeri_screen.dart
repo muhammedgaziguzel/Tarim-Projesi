@@ -233,14 +233,23 @@ class _GaleriScreenState extends State<GaleriScreen> {
                               dropdownColor:
                                   isDark ? Colors.grey[800] : Colors.white,
                               style: const TextStyle(
-                                  color: Colors.white, fontSize: 16),
-                              iconEnabledColor: Colors.white,
+                                  color: Colors.black, fontSize: 16),
+                              iconEnabledColor: Colors.black,
                               onChanged: (newAlbum) =>
                                   setState(() => _selectedAlbum = newAlbum),
                               items: _allAlbums
                                   .map((album) => DropdownMenuItem(
                                         value: album,
-                                        child: Text(album.name),
+                                        child: Row(
+                                          children: [
+                                            Icon(album.icon,
+                                                color: Colors.black),
+                                            const SizedBox(width: 8),
+                                            Text(album.name,
+                                                style: const TextStyle(
+                                                    color: Colors.black)),
+                                          ],
+                                        ),
                                       ))
                                   .toList(),
                             ),
@@ -362,31 +371,35 @@ class _GaleriScreenState extends State<GaleriScreen> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      elevation: 4,
       child: ListTile(
+        onTap: () => _openDetailScreen(context, imageUrl, index, images),
         leading: Hero(
           tag: imageUrl,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: SizedBox(
-              width: 60,
-              height: 60,
-              child: CachedNetworkImage(
-                imageUrl: imageUrl,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  color: isDark
-                      ? Colors.grey[800]
-                      : AppColors.secondary.withOpacity(0.5),
-                  child: const Center(child: CircularProgressIndicator()),
-                ),
-              ),
+          child: CachedNetworkImage(
+            imageUrl: imageUrl,
+            fit: BoxFit.cover,
+            width: 50,
+            height: 50,
+            placeholder: (context, url) => Container(
+              color: isDark
+                  ? Colors.grey[800]
+                  : AppColors.secondary.withOpacity(0.5),
+              child: const Center(child: CircularProgressIndicator()),
+            ),
+            errorWidget: (context, url, error) => Container(
+              color: isDark
+                  ? Colors.grey[800]
+                  : AppColors.secondary.withOpacity(0.5),
+              child: const Icon(Icons.error),
             ),
           ),
         ),
-        title: Text('Fotoğraf ID: ${_getImageId(imageUrl)}'),
-        subtitle: Text('Kategori: ${_currentAlbum.name}'),
-        onTap: () => _openDetailScreen(context, imageUrl, index, images),
+        title: Text(
+          'Fotoğraf ${_getImageId(imageUrl)}',
+          style: TextStyle(color: isDark ? Colors.white : Colors.black),
+        ),
       ),
     );
   }
@@ -396,97 +409,37 @@ class _GaleriScreenState extends State<GaleriScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => DetailScreen(
-          imageUrl: imageUrl,
-          index: index,
-          images: images,
-        ),
+        builder: (context) => DetailScreen(imageUrl: imageUrl),
       ),
     );
   }
 }
 
-class DetailScreen extends StatefulWidget {
+class DetailScreen extends StatelessWidget {
   final String imageUrl;
-  final int index;
-  final List<String> images;
 
-  const DetailScreen({
-    super.key,
-    required this.imageUrl,
-    required this.index,
-    required this.images,
-  });
-
-  @override
-  State<DetailScreen> createState() => _DetailScreenState();
-}
-
-class _DetailScreenState extends State<DetailScreen> {
-  late PageController _pageController;
-  late int _currentIndex;
-  bool _isFullScreen = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _currentIndex = widget.index;
-    _pageController = PageController(initialPage: _currentIndex);
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
+  const DetailScreen({Key? key, required this.imageUrl}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: _isFullScreen
-          ? null
-          : AppBar(
-              backgroundColor: Colors.black.withOpacity(0.5),
-              title: Text('${_currentIndex + 1}/${widget.images.length}'),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.fullscreen),
-                  onPressed: () =>
-                      setState(() => _isFullScreen = !_isFullScreen),
-                ),
-              ],
-            ),
-      body: GestureDetector(
-        onTap: () => setState(() => _isFullScreen = !_isFullScreen),
-        child: Container(
-          color: Colors.black,
-          child: PageView.builder(
-            controller: _pageController,
-            itemCount: widget.images.length,
-            onPageChanged: (index) => setState(() => _currentIndex = index),
-            itemBuilder: (context, index) {
-              return InteractiveViewer(
-                minScale: 0.5,
-                maxScale: 4.0,
-                child: Center(
-                  child: Hero(
-                    tag: widget.images[index],
-                    child: CachedNetworkImage(
-                      imageUrl: widget.images[index],
-                      fit: BoxFit.contain,
-                      placeholder: (context, url) => const Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                      errorWidget: (context, url, error) => const Icon(
-                        Icons.error,
-                        size: 48,
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
+      appBar: AppBar(
+        title: const Text('Fotoğraf Detayı'),
+        backgroundColor: isDark ? AppColors.darkPrimary : AppColors.primary,
+      ),
+      body: Center(
+        child: Hero(
+          tag: imageUrl,
+          child: CachedNetworkImage(
+            imageUrl: imageUrl,
+            fit: BoxFit.contain,
+            placeholder: (context, url) =>
+                const Center(child: CircularProgressIndicator()),
+            errorWidget: (context, url, error) =>
+                const Icon(Icons.error_outline),
           ),
         ),
       ),
