@@ -1,14 +1,76 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'dart:io';
 
-// 👇 ChatMessage sınıfı dışarıda tanımlı
+class ApiService {
+  final String apiUrl = "http://10.0.2.2:5001/predict";
+
+  Future<Map<String, dynamic>?> sendImage(File imageFile) async {
+    try {
+      var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
+      request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
+
+      var response = await request.send();
+      var responseData = await response.stream.bytesToString();
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(responseData);
+        if (data.containsKey('label') && data.containsKey('confidence')) {
+          return {
+            "status": "success",
+            "label": data['label'],
+            "confidence": data['confidence'],
+            "solution": data['solution'] ?? "Çözüm bulunamadı."
+          };
+        } else {
+          return {
+            "status": "error",
+            "message": "API'den beklenen formatta yanıt alınamadı."
+          };
+        }
+      } else {
+        return {"status": "error", "message": "Tahmin alınamadı"};
+      }
+    } catch (e) {
+      return {"status": "error", "message": "Bağlantı hatası"};
+    }
+  }
+}
+
 class ChatMessage {
   final String text;
   final bool isUser;
   final bool isImage;
 
   ChatMessage({required this.text, required this.isUser, this.isImage = false});
+}
+
+Future<String> sendMessage(String userId, String message, {String? context}) async {
+  final url = Uri.parse('http://10.0.2.2:5000/chat');
+
+  final body = {
+    'userId': userId,
+    'message': message,
+  };
+
+  if (context != null) {
+    body['context'] = context;
+  }
+
+  final response = await http.post(
+    url,
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode(body),
+  );
+
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+    return data['reply'];
+  } else {
+    throw Exception('API hatası: ${response.statusCode}');
+  }
 }
 
 class AiChatScreen extends StatefulWidget {
@@ -25,8 +87,12 @@ class _AiChatScreenState extends State<AiChatScreen> {
   final List<ChatMessage> _messages = [];
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final ApiService _apiService = ApiService();
+
   File? _selectedImage;
   bool _isLoading = false;
+  String apiResponse = "";
+  String? lastPredictionLabel;
 
   @override
   void dispose() {
@@ -47,7 +113,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
     });
   }
 
-  void _sendMessage() {
+  void _sendMessage() async {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
 
@@ -59,18 +125,40 @@ class _AiChatScreenState extends State<AiChatScreen> {
     _controller.clear();
     _scrollToBottom();
 
-    Future.delayed(const Duration(seconds: 1), () {
+    try {
+      final response = await sendMessage(
+        "kullanici_1",
+        text,
+        context: lastPredictionLabel,
+      );
+
       setState(() {
-        _messages.add(ChatMessage(
-          text: _selectedImage != null
-              ? "Görselle birlikte gelen soruya cevabım: '$text' oldukça ilginç!"
-              : "Cevabım: '$text' hakkında düşündüğüm şey şu olabilir...",
-          isUser: false,
-        ));
+        _messages.add(ChatMessage(text: response, isUser: false));
         _isLoading = false;
       });
       _scrollToBottom();
-    });
+    } catch (e) {
+      _showErrorDialog("Yanıt alınırken bir hata oluştu:\n$e");
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> analyzeImage(File image) async {
+    var result = await _apiService.sendImage(image);
+    if (result != null &&
+        result["status"] == "success" &&
+        result.containsKey('label') &&
+        result.containsKey('confidence')) {
+      lastPredictionLabel = result['label'];
+      setState(() {
+        apiResponse =
+            "✅ Tahmin: ${result['label']}\nGüven: ${(result['confidence'] * 100).toStringAsFixed(2)}%\n\nÇözüm:\n${result['solution']}";
+      });
+    } else {
+      setState(() {
+        apiResponse = "❌ Tahmin alınamadı!";
+      });
+    }
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -79,14 +167,29 @@ class _AiChatScreenState extends State<AiChatScreen> {
       final picked = await picker.pickImage(source: source);
 
       if (picked != null) {
+        File image = File(picked.path);
         setState(() {
-          _selectedImage = File(picked.path);
+          _selectedImage = image;
+          lastPredictionLabel = null;
           _messages.add(ChatMessage(
             text: "Görsel yüklendi",
             isUser: true,
             isImage: true,
           ));
+          _isLoading = true;
         });
+        _scrollToBottom();
+
+        await analyzeImage(image);
+
+        setState(() {
+          _isLoading = false;
+          _messages.add(ChatMessage(
+            text: apiResponse,
+            isUser: false,
+          ));
+        });
+
         _scrollToBottom();
       }
     } catch (e) {
@@ -139,6 +242,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
               if (_selectedImage != null) {
                 setState(() {
                   _selectedImage = null;
+                  lastPredictionLabel = null;
                   _messages.add(ChatMessage(
                     text: "Görsel kaldırıldı",
                     isUser: true,
@@ -157,10 +261,14 @@ class _AiChatScreenState extends State<AiChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          "Yapay Zekâ Asistanı",
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text("Yapay Zekâ Asistanı", style: TextStyle(color: Colors.white)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.image, color: Colors.white),
+            onPressed: _showImageOptions,
+            tooltip: "Görsel Ekle",
+          ),
+        ],
         backgroundColor: primaryColor,
         elevation: 2,
       ),
@@ -179,10 +287,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "Seçilen Görsel:",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                    const Text("Seçilen Görsel:", style: TextStyle(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
@@ -193,6 +298,17 @@ class _AiChatScreenState extends State<AiChatScreen> {
                         fit: BoxFit.cover,
                       ),
                     ),
+                    if (apiResponse.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          apiResponse,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: primaryColor,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -202,19 +318,9 @@ class _AiChatScreenState extends State<AiChatScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons.chat_bubble_outline,
-                            size: 80,
-                            color: primaryColor.withOpacity(0.5),
-                          ),
+                          Icon(Icons.chat_bubble_outline, size: 80, color: primaryColor.withOpacity(0.5)),
                           const SizedBox(height: 16),
-                          Text(
-                            "Bir görsel yükleyip sohbete başlayın!",
-                            style: TextStyle(
-                              color: primaryColor,
-                              fontSize: 16,
-                            ),
-                          ),
+                          Text("Bir görsel yükleyip sohbete başlayın!", style: TextStyle(color: primaryColor, fontSize: 16)),
                         ],
                       ),
                     )
@@ -225,46 +331,32 @@ class _AiChatScreenState extends State<AiChatScreen> {
                       itemBuilder: (ctx, index) {
                         final message = _messages[index];
                         return Align(
-                          alignment: message.isUser
-                              ? Alignment.centerRight
-                              : Alignment.centerLeft,
+                          alignment: message.isUser ? Alignment.centerRight : Alignment.centerLeft,
                           child: Container(
                             constraints: BoxConstraints(
-                              maxWidth:
-                                  MediaQuery.of(context).size.width * 0.75,
+                              maxWidth: MediaQuery.of(context).size.width * 0.75,
                             ),
-                            margin: const EdgeInsets.symmetric(
-                              vertical: 4,
-                              horizontal: 8,
-                            ),
+                            margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: message.isUser
-                                  ? primaryColor
-                                  : secondaryColor,
+                              color: message.isUser ? primaryColor : secondaryColor,
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  message.isUser
-                                      ? "🧑‍🌾 Sen"
-                                      : "🤖 Yapay Zekâ",
+                                  message.isUser ? "🧑‍🌾 Sen" : "🤖 Yapay Zekâ",
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    color: message.isUser
-                                        ? Colors.white
-                                        : primaryColor,
+                                    color: message.isUser ? Colors.white : primaryColor,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   message.text,
                                   style: TextStyle(
-                                    color: message.isUser
-                                        ? Colors.white
-                                        : Colors.black87,
+                                    color: message.isUser ? Colors.white : Colors.black87,
                                   ),
                                 ),
                                 if (message.isImage)
@@ -272,9 +364,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                                     padding: const EdgeInsets.only(top: 4),
                                     child: Icon(
                                       Icons.image,
-                                      color: message.isUser
-                                          ? Colors.white70
-                                          : primaryColor.withOpacity(0.7),
+                                      color: message.isUser ? Colors.white70 : primaryColor.withOpacity(0.7),
                                     ),
                                   ),
                               ],
@@ -298,13 +388,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      "Yapay zekâ düşünüyor...",
-                      style: TextStyle(
-                        color: primaryColor,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
+                    Text("Yapay zekâ düşünüyor...", style: TextStyle(color: primaryColor, fontStyle: FontStyle.italic)),
                   ],
                 ),
               ),
@@ -313,32 +397,11 @@ class _AiChatScreenState extends State<AiChatScreen> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, -1),
-                  ),
+                  BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, -1)),
                 ],
               ),
               child: Row(
                 children: [
-                  Material(
-                    color: secondaryColor.withOpacity(0.6),
-                    shape: const CircleBorder(),
-                    child: InkWell(
-                      customBorder: const CircleBorder(),
-                      onTap: _showImageOptions,
-                      child: Padding(
-                        padding: const EdgeInsets.all(10),
-                        child: Icon(
-                          Icons.image,
-                          color: primaryColor,
-                          size: 24,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
                   Expanded(
                     child: TextField(
                       controller: _controller,
@@ -350,10 +413,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                         ),
                         filled: true,
                         fillColor: secondaryColor.withOpacity(0.3),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       ),
                       onSubmitted: (_) => _sendMessage(),
                     ),
@@ -367,10 +427,7 @@ class _AiChatScreenState extends State<AiChatScreen> {
                       borderRadius: BorderRadius.circular(50),
                       child: Container(
                         padding: const EdgeInsets.all(12),
-                        child: const Icon(
-                          Icons.send_rounded,
-                          color: Colors.white,
-                        ),
+                        child: const Icon(Icons.send_rounded, color: Colors.white),
                       ),
                     ),
                   ),
