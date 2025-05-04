@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:tarim_proje/services/auth_service.dart';
 import 'package:tarim_proje/screens/girisekrani_screen.dart';
+import 'package:tarim_proje/screens/profili_duzenle_screen.dart';
+import 'package:tarim_proje/screens/ayarlar_screen.dart';
+import 'package:tarim_proje/screens/favoriler_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -171,7 +174,14 @@ class _HesabimScreenState extends State<HesabimScreen> {
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () {
-                          // Düzenleme sayfasına yönlendirme
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    const ProfilDuzenleScreen()),
+                          ).then((_) {
+                            _getUserData(); // Geri dönünce bilgileri yenile
+                          });
                         },
                         icon: const Icon(Icons.edit, color: Colors.white),
                         label: const Text(
@@ -212,9 +222,21 @@ class _HesabimScreenState extends State<HesabimScreen> {
                       menuItem(
                           context, "Siparişlerim", Icons.shopping_bag, () {}),
                       const Divider(height: 1),
-                      menuItem(context, "Favorilerim", Icons.favorite, () {}),
+                      menuItem(context, "Favorilerim", Icons.favorite, () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const FavorilerScreen()),
+                        );
+                      }),
                       const Divider(height: 1),
-                      menuItem(context, "Ayarlar", Icons.settings, () {}),
+                      menuItem(context, "Ayarlar", Icons.settings, () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const AyarlarScreen()),
+                        );
+                      }),
                       const Divider(height: 1),
                       menuItem(
                         context,
