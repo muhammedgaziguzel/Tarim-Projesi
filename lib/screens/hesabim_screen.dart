@@ -4,6 +4,8 @@ import 'package:tarim_proje/screens/girisekrani_screen.dart';
 import 'package:tarim_proje/screens/profili_duzenle_screen.dart';
 import 'package:tarim_proje/screens/ayarlar_screen.dart';
 import 'package:tarim_proje/screens/favoriler_screen.dart';
+import 'package:tarim_proje/screens/adresler_screen.dart';
+import 'package:tarim_proje/screens/siparisler_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -155,9 +157,7 @@ class HesabimEkrani extends StatelessWidget {
                             MaterialPageRoute(
                                 builder: (context) =>
                                     const ProfilDuzenleScreen()),
-                          ).then((_) {
-                            _getUserData(); // Geri dönünce bilgileri yenile
-                          });
+                          );
                         },
                         icon: const Icon(Icons.edit, color: Colors.white),
                         label: const Text(
@@ -190,10 +190,21 @@ class HesabimEkrani extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      menuItem(context, "Adreslerim", Icons.location_on, () {}),
+                      menuItem(context, "Adreslerim", Icons.location_on, () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const AdreslerScreen()),
+                        );
+                      }),
                       const Divider(height: 1),
-                      menuItem(
-                          context, "Siparişlerim", Icons.shopping_bag, () {}),
+                      menuItem(context, "Siparişlerim", Icons.shopping_bag, () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const SiparislerScreen()),
+                        );
+                      }),
                       const Divider(height: 1),
                       menuItem(context, "Favorilerim", Icons.favorite, () {
                         Navigator.push(
@@ -211,8 +222,15 @@ class HesabimEkrani extends StatelessWidget {
                         );
                       }),
                       const Divider(height: 1),
-                      menuItem(context, "Çıkış Yap", Icons.logout, () {},
-                          textColor: Colors.red),
+                      menuItem(context, "Çıkış Yap", Icons.logout, () async {
+                        await AuthService().signOut();
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const GirisekraniScreen()),
+                          (route) => false,
+                        );
+                      }, textColor: Colors.red),
                     ],
                   ),
                 ),

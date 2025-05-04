@@ -1,64 +1,55 @@
 import 'package:flutter/material.dart';
-import '../services/todo_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class YapilacaklarScreen extends StatefulWidget {
   const YapilacaklarScreen({super.key});
-  
+
   @override
-  YapilacaklarScreenState createState() => YapilacaklarScreenState();
+  State<YapilacaklarScreen> createState() => _YapilacaklarScreenState();
 }
 
-class YapilacaklarScreenState extends State<YapilacaklarScreen> {
-  final List<Map<String, dynamic>> _tasks = [];
+class _YapilacaklarScreenState extends State<YapilacaklarScreen> {
   final TextEditingController _controller = TextEditingController();
-  final TodoService _todoService = TodoService();
-  final int _userId = 1; // Geçici olarak sabit bir kullanıcı ID
-  
-  bool _isLoading = true;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   bool _isAdding = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadTasks();
-  }
-
-  Future<void> _loadTasks() async {
-    setState(() {
-      _isLoading = true;
-    });
-    
-    try {
-      final todos = await _todoService.fetchTodos(_userId);
-      setState(() {
-        _tasks.clear();
-        _tasks.addAll(todos as Iterable<Map<String, dynamic>>);
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      _showErrorSnackBar('Görevler alınırken hata oluştu: $e');
-    }
-  }
-
-  void _addTask() async {
+  Future<void> _addTask() async {
     if (_controller.text.isEmpty) return;
-    
-    final newTask = _controller.text;
-    _controller.clear();
-    
+
     setState(() {
       _isAdding = true;
     });
-    
+
     try {
-      await _todoService.addTodo(newTask, _userId);
-      await _loadTasks();
-      _showSuccessSnackBar('Görev başarıyla eklendi');
+      final user = _auth.currentUser;
+      if (user != null) {
+        await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .collection('gorevler')
+            .add({
+          'baslik': _controller.text.trim(),
+          'tamamlandi': false,
+          'olusturmaTarihi': FieldValue.serverTimestamp(),
+        });
+
+        _controller.clear();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Görev başarıyla eklendi'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
     } catch (e) {
-      _showErrorSnackBar('Görev eklenirken hata oluştu: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Hata oluştu: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     } finally {
       setState(() {
         _isAdding = false;
@@ -66,88 +57,95 @@ class YapilacaklarScreenState extends State<YapilacaklarScreen> {
     }
   }
 
-  Future<void> _removeTask(int index) async {
-    final taskToRemove = _tasks[index];
-    setState(() {
-      _tasks.removeAt(index);
-    });
-    
-    // Kullanıcıya bildirim göster
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${taskToRemove['title']} silindi'),
-        backgroundColor: Colors.orange,
-        action: SnackBarAction(
-          label: 'Geri Al',
-          textColor: Colors.white,
-          onPressed: () {
-            setState(() {
-              _tasks.insert(index, taskToRemove);
-            });
-          },
+  Future<void> _toggleTask(DocumentSnapshot doc) async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        await doc.reference.update({
+          'tamamlandi': !(doc.data() as Map<String, dynamic>)['tamamlandi'],
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Hata oluştu: $e'),
+          backgroundColor: Colors.red,
         ),
-      ),
-    );
-    
-    // API'de silme endpoint'i yok olduğu için burada yalnızca UI güncellemesi yapıyoruz
+      );
+    }
   }
 
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
+  Future<void> _deleteTask(DocumentSnapshot doc) async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        await doc.reference.delete();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Görev silindi'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Hata oluştu: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
-  void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-      ),
-    );
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F2E8), // İstediğiniz arka plan rengi
-      body: Padding(
-        padding: const EdgeInsets.only(top: 40.0, left: 16.0, right: 16.0, bottom: 16.0),
-        child: Column(
-          children: [
-            // Yeni görev ekleme alanı
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _controller,
-                        decoration: const InputDecoration(
-                          hintText: "Yeni görev ekle...",
-                          border: InputBorder.none,
-                        ),
-                        onSubmitted: (_) => _addTask(),
+      backgroundColor: const Color(0xFFF5F2E8),
+      appBar: AppBar(
+        title: const Text('Yapılacaklar'),
+        backgroundColor: const Color(0xFF2C6E49),
+        foregroundColor: Colors.white,
+      ),
+      body: Column(
+        children: [
+          // Yeni görev ekleme alanı
+          Container(
+            margin: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      decoration: const InputDecoration(
+                        hintText: "Yeni görev ekle...",
+                        border: InputBorder.none,
                       ),
+                      onSubmitted: (_) => _addTask(),
                     ),
-                    ElevatedButton.icon(
-                      onPressed: _isAdding ? null : _addTask,
-                      icon: _isAdding 
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: _isAdding ? null : _addTask,
+                    icon: _isAdding
                         ? const SizedBox(
                             width: 20,
                             height: 20,
@@ -157,145 +155,117 @@ class YapilacaklarScreenState extends State<YapilacaklarScreen> {
                             ),
                           )
                         : const Icon(Icons.add),
-                      label: Text(_isAdding ? "Ekleniyor..." : "Ekle"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF556B2F), // Zeytin yeşili renk
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                    label: Text(_isAdding ? "Ekleniyor..." : "Ekle"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2C6E49),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-            
-            const SizedBox(height: 20),
-            
-            // Liste başlığı - yenileme butonu ile birlikte
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Görevlerim (${_tasks.length})",
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.refresh, color: Colors.black54),
-                  onPressed: _loadTasks,
-                  tooltip: 'Listeyi Yenile',
-                ),
-              ],
-            ),
-            
-            const SizedBox(height: 10),
-            
-            // Görev listesi
-            Expanded(
-              child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
-                : _tasks.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.task_alt,
-                            size: 70,
-                            color: Colors.grey.withOpacity(0.5),
+          ),
+
+          // Görev listesi
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: _firestore
+                  .collection('users')
+                  .doc(_auth.currentUser?.uid)
+                  .collection('gorevler')
+                  .orderBy('olusturmaTarihi', descending: true)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(
+                      child: Text('Bir hata oluştu: ${snapshot.error}'));
+                }
+
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (snapshot.data?.docs.isEmpty ?? true) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.task_alt,
+                          size: 70,
+                          color: Colors.grey.withOpacity(0.5),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          "Henüz görev eklenmemiş",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey,
                           ),
-                          const SizedBox(height: 16),
-                          const Text(
-                            "Henüz görev eklenmemiş",
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: _tasks.length,
-                      itemBuilder: (context, index) {
-                        final task = _tasks[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 8.0),
-                          child: Card(
-                            elevation: 2,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Dismissible(
-                              key: Key(index.toString()),
-                              direction: DismissDirection.endToStart,
-                              background: Container(
-                                alignment: Alignment.centerRight,
-                                padding: const EdgeInsets.only(right: 20.0),
-                                decoration: BoxDecoration(
-                                  color: Colors.red,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Icon(
-                                  Icons.delete,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              onDismissed: (direction) {
-                                _removeTask(index);
-                              },
-                              child: ListTile(
-                                contentPadding: const EdgeInsets.symmetric(
-                                  vertical: 8.0,
-                                  horizontal: 16.0,
-                                ),
-                                leading: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: Colors.blueAccent.withOpacity(0.1),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.assignment_outlined,
-                                    color: Colors.blueAccent,
-                                  ),
-                                ),
-                                title: Text(
-                                  task['title'],
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                subtitle: task['completed'] != null
-                                  ? Text(
-                                      task['completed'] ? "Tamamlandı" : "Devam ediyor",
-                                      style: TextStyle(
-                                        color: task['completed'] ? Colors.green : Colors.orange,
-                                        fontSize: 12,
-                                      ),
-                                    )
-                                  : null,
-                                trailing: IconButton(
-                                  icon: const Icon(Icons.delete_outline, color: Colors.red),
-                                  onPressed: () => _removeTask(index),
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
+                        ),
+                      ],
                     ),
+                  );
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: snapshot.data!.docs.length,
+                  itemBuilder: (context, index) {
+                    final doc = snapshot.data!.docs[index];
+                    final data = doc.data() as Map<String, dynamic>;
+                    final bool tamamlandi = data['tamamlandi'] ?? false;
+
+                    return Dismissible(
+                      key: Key(doc.id),
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 20.0),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.delete,
+                          color: Colors.white,
+                        ),
+                      ),
+                      onDismissed: (direction) => _deleteTask(doc),
+                      child: Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: ListTile(
+                          leading: Checkbox(
+                            value: tamamlandi,
+                            onChanged: (_) => _toggleTask(doc),
+                            activeColor: const Color(0xFF2C6E49),
+                          ),
+                          title: Text(
+                            data['baslik'],
+                            style: TextStyle(
+                              decoration: tamamlandi
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                              color: tamamlandi ? Colors.grey : Colors.black,
+                            ),
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete_outline,
+                                color: Colors.red),
+                            onPressed: () => _deleteTask(doc),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
             ),
-          ],
-        ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -304,54 +274,77 @@ class YapilacaklarScreenState extends State<YapilacaklarScreen> {
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
-            builder: (context) => Container(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    "Yapılacaklar Listesi İstatistikleri",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+            builder: (context) => StreamBuilder<QuerySnapshot>(
+              stream: _firestore
+                  .collection('users')
+                  .doc(_auth.currentUser?.uid)
+                  .collection('gorevler')
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final docs = snapshot.data!.docs;
+                final toplam = docs.length;
+                final tamamlanan = docs
+                    .where((doc) =>
+                        (doc.data() as Map<String, dynamic>)['tamamlandi'] ==
+                        true)
+                    .length;
+                final bekleyen = toplam - tamamlanan;
+
+                return Container(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      _buildStatItem(
-                        "Toplam",
-                        _tasks.length.toString(),
-                        Icons.list,
-                        Colors.blue,
+                      const Text(
+                        "Görev İstatistikleri",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      _buildStatItem(
-                        "Tamamlanan",
-                        _tasks.where((task) => task['completed'] == true).length.toString(),
-                        Icons.check_circle,
-                        Colors.green,
-                      ),
-                      _buildStatItem(
-                        "Bekleyen",
-                        _tasks.where((task) => task['completed'] != true).length.toString(),
-                        Icons.pending_actions,
-                        Colors.orange,
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _buildStatItem(
+                            "Toplam",
+                            toplam.toString(),
+                            Icons.list,
+                            Colors.blue,
+                          ),
+                          _buildStatItem(
+                            "Tamamlanan",
+                            tamamlanan.toString(),
+                            Icons.check_circle,
+                            Colors.green,
+                          ),
+                          _buildStatItem(
+                            "Bekleyen",
+                            bekleyen.toString(),
+                            Icons.pending_actions,
+                            Colors.orange,
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
+                );
+              },
             ),
           );
         },
-        backgroundColor: const Color(0xFF556B2F), // Zeytin yeşili renk
+        backgroundColor: const Color(0xFF2C6E49),
         child: const Icon(Icons.analytics),
       ),
     );
   }
 
-  Widget _buildStatItem(String title, String value, IconData icon, Color color) {
+  Widget _buildStatItem(
+      String title, String value, IconData icon, Color color) {
     return Column(
       children: [
         Container(
