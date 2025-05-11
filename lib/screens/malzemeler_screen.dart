@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class MalzemelerScreen extends StatefulWidget {
   const MalzemelerScreen({super.key});
@@ -8,31 +10,37 @@ class MalzemelerScreen extends StatefulWidget {
 }
 
 class _MalzemelerScreenState extends State<MalzemelerScreen> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final List<Map<String, dynamic>> malzemeler = const [
     {
       'name': 'Traktör',
-      'image': 'https://www.deere.com.tr/assets/images/6m180_r2g079731_large_large_10b025e32822ce8d12dabace57a94c1e7e18a8c7.png',
+      'image':
+          'https://www.deere.com.tr/assets/images/6m180_r2g079731_large_large_10b025e32822ce8d12dabace57a94c1e7e18a8c7.png',
       'description': 'Tarımda kullanılan güçlü bir motorlu araç.',
       'price': '150,000 TL',
       'categories': ['Motorlu Araçlar', 'Büyük Ekipmanlar'],
     },
     {
       'name': 'Sulama Sistemi',
-      'image': 'https://cdn.wikifarmer.com/images/detailed/2024/09/Sulama-Sistemi-Secerken-Dikkat-Edilmesi-Gereken-Faktorler.jpg',
+      'image':
+          'https://cdn.wikifarmer.com/images/detailed/2024/09/Sulama-Sistemi-Secerken-Dikkat-Edilmesi-Gereken-Faktorler.jpg',
       'description': 'Bitkilerin düzenli sulanmasını sağlayan sistem.',
       'price': '25,000 TL',
       'categories': ['Sulama', 'Altyapı Sistemleri'],
     },
     {
       'name': 'Tırmık',
-      'image': 'https://cdn.tekzen.com.tr/images/product/agromak/820405/dirgen-4-disli-f-6321_330x330_1.jpg',
+      'image':
+          'https://cdn.tekzen.com.tr/images/product/agromak/820405/dirgen-4-disli-f-6321_330x330_1.jpg',
       'description': 'Toprağı düzeltmek ve havalandırmak için kullanılır.',
       'price': '850 TL',
       'categories': ['El Aletleri', 'Toprak İşleme'],
     },
     {
       'name': 'Çapa Makinesi',
-      'image': 'https://ideacdn.net/idea/nc/83/myassets/products/012/wwwww.jpg?revision=1742375123',
+      'image':
+          'https://ideacdn.net/idea/nc/83/myassets/products/012/wwwww.jpg?revision=1742375123',
       'description': 'Hassas toprak işlemesi için ideal elektrikli makine.',
       'price': '12,500 TL',
       'categories': ['Motorlu Araçlar', 'Toprak İşleme'],
@@ -41,7 +49,15 @@ class _MalzemelerScreenState extends State<MalzemelerScreen> {
 
   List<Map<String, dynamic>> filteredMalzemeler = [];
   String selectedCategory = 'Tümü';
-  final List<String> categories = ['Tümü', 'Motorlu Araçlar', 'Sulama', 'El Aletleri', 'Toprak İşleme', 'Altyapı Sistemleri', 'Büyük Ekipmanlar'];
+  final List<String> categories = [
+    'Tümü',
+    'Motorlu Araçlar',
+    'Sulama',
+    'El Aletleri',
+    'Toprak İşleme',
+    'Altyapı Sistemleri',
+    'Büyük Ekipmanlar'
+  ];
 
   @override
   void initState() {
@@ -60,6 +76,54 @@ class _MalzemelerScreenState extends State<MalzemelerScreen> {
             .toList();
       }
     });
+  }
+
+  Future<void> _addToFavorites(Map<String, dynamic> malzeme) async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .collection('favoriler')
+            .doc(malzeme['name'])
+            .set({
+          'isim': malzeme['name'],
+          'resim': malzeme['image'],
+          'fiyat': malzeme['price'],
+          'aciklama': malzeme['description'],
+          'kategoriler': malzeme['categories'],
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Favorilere eklendi!')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Hata oluştu: $e')),
+      );
+    }
+  }
+
+  Future<void> _removeFromFavorites(String malzemeAdi) async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .collection('favoriler')
+            .doc(malzemeAdi)
+            .delete();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Favorilerden kaldırıldı!')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Hata oluştu: $e')),
+      );
+    }
   }
 
   @override
@@ -113,7 +177,8 @@ class _MalzemelerScreenState extends State<MalzemelerScreen> {
                     itemBuilder: (context, index) {
                       final malzeme = filteredMalzemeler[index];
                       return Card(
-                        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12.0),
                         ),
@@ -123,7 +188,8 @@ class _MalzemelerScreenState extends State<MalzemelerScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => MalzemeDetayScreen(malzeme: malzeme),
+                                builder: (context) =>
+                                    MalzemeDetayScreen(malzeme: malzeme),
                               ),
                             );
                           },
@@ -140,19 +206,29 @@ class _MalzemelerScreenState extends State<MalzemelerScreen> {
                                     child: Image.network(
                                       malzeme['image']!,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) {
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
                                         return Container(
                                           color: Colors.grey[300],
-                                          child: const Icon(Icons.image_not_supported, size: 40),
+                                          child: const Icon(
+                                              Icons.image_not_supported,
+                                              size: 40),
                                         );
                                       },
-                                      loadingBuilder: (context, child, loadingProgress) {
-                                        if (loadingProgress == null) return child;
+                                      loadingBuilder:
+                                          (context, child, loadingProgress) {
+                                        if (loadingProgress == null)
+                                          return child;
                                         return Center(
                                           child: CircularProgressIndicator(
-                                            value: loadingProgress.expectedTotalBytes != null
-                                                ? loadingProgress.cumulativeBytesLoaded /
-                                                    (loadingProgress.expectedTotalBytes ?? 1)
+                                            value: loadingProgress
+                                                        .expectedTotalBytes !=
+                                                    null
+                                                ? loadingProgress
+                                                        .cumulativeBytesLoaded /
+                                                    (loadingProgress
+                                                            .expectedTotalBytes ??
+                                                        1)
                                                 : null,
                                           ),
                                         );
@@ -163,7 +239,8 @@ class _MalzemelerScreenState extends State<MalzemelerScreen> {
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         malzeme['name']!,
@@ -194,15 +271,20 @@ class _MalzemelerScreenState extends State<MalzemelerScreen> {
                                       Wrap(
                                         spacing: 4,
                                         children: [
-                                          for (var category in malzeme['categories'])
+                                          for (var category
+                                              in malzeme['categories'])
                                             Chip(
                                               label: Text(
                                                 category,
-                                                style: const TextStyle(fontSize: 10),
+                                                style: const TextStyle(
+                                                    fontSize: 10),
                                               ),
                                               padding: EdgeInsets.zero,
-                                              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                              visualDensity: VisualDensity.compact,
+                                              materialTapTargetSize:
+                                                  MaterialTapTargetSize
+                                                      .shrinkWrap,
+                                              visualDensity:
+                                                  VisualDensity.compact,
                                             ),
                                         ],
                                       ),
@@ -219,13 +301,27 @@ class _MalzemelerScreenState extends State<MalzemelerScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Favorilere eklendi!')),
+      floatingActionButton: StreamBuilder<DocumentSnapshot>(
+        stream: _firestore
+            .collection('users')
+            .doc(_auth.currentUser?.uid)
+            .collection('favoriler')
+            .doc('Traktör') // Örnek olarak Traktör'ü kontrol ediyoruz
+            .snapshots(),
+        builder: (context, snapshot) {
+          final isFavorite = snapshot.hasData && snapshot.data!.exists;
+          return FloatingActionButton(
+            onPressed: () {
+              if (isFavorite) {
+                _removeFromFavorites('Traktör');
+              } else {
+                _addToFavorites(
+                    malzemeler[0]); // Örnek olarak ilk malzemeyi ekliyoruz
+              }
+            },
+            child: Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
           );
         },
-        child: const Icon(Icons.favorite),
       ),
     );
   }
@@ -233,8 +329,38 @@ class _MalzemelerScreenState extends State<MalzemelerScreen> {
 
 class MalzemeDetayScreen extends StatelessWidget {
   final Map<String, dynamic> malzeme;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  const MalzemeDetayScreen({super.key, required this.malzeme});
+  MalzemeDetayScreen({super.key, required this.malzeme});
+
+  Future<void> _toggleFavorite() async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        final favRef = _firestore
+            .collection('users')
+            .doc(user.uid)
+            .collection('favoriler')
+            .doc(malzeme['name']);
+
+        final doc = await favRef.get();
+        if (doc.exists) {
+          await favRef.delete();
+        } else {
+          await favRef.set({
+            'isim': malzeme['name'],
+            'resim': malzeme['image'],
+            'fiyat': malzeme['price'],
+            'aciklama': malzeme['description'],
+            'kategoriler': malzeme['categories'],
+          });
+        }
+      }
+    } catch (e) {
+      print('Hata: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -248,15 +374,23 @@ class MalzemeDetayScreen extends StatelessWidget {
             icon: const Icon(Icons.share),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Paylaşım özelliği yakında eklenecek')),
+                const SnackBar(
+                    content: Text('Paylaşım özelliği yakında eklenecek')),
               );
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.favorite_border),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Favorilere eklendi')),
+          StreamBuilder<DocumentSnapshot>(
+            stream: _firestore
+                .collection('users')
+                .doc(_auth.currentUser?.uid)
+                .collection('favoriler')
+                .doc(malzeme['name'])
+                .snapshots(),
+            builder: (context, snapshot) {
+              final isFavorite = snapshot.hasData && snapshot.data!.exists;
+              return IconButton(
+                icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
+                onPressed: _toggleFavorite,
               );
             },
           ),
@@ -483,7 +617,8 @@ class MalzemeArama extends SearchDelegate<String> {
     return _buildSearchResults(context, suggestions);
   }
 
-  Widget _buildSearchResults(BuildContext context, List<Map<String, dynamic>> results) {
+  Widget _buildSearchResults(
+      BuildContext context, List<Map<String, dynamic>> results) {
     return ListView.builder(
       itemCount: results.length,
       itemBuilder: (context, index) {
