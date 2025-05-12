@@ -44,24 +44,80 @@ class BitkilerimPage extends StatefulWidget {
   State<BitkilerimPage> createState() => _BitkilerimPageState();
 }
 
-class _BitkilerimPageState extends State<BitkilerimPage> with SingleTickerProviderStateMixin {
+class _BitkilerimPageState extends State<BitkilerimPage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final ScrollController _scrollController = ScrollController();
   final List<Plant> _selectedPlants = []; // User's selected plants
   final List<Plant> _allPlants = [
-    Plant(name: "Domates", image: "assets/images/domates.jpg", category: "Sebze"),
-    Plant(name: "Biber", image: "assets/images/yeşil.jpg", category: "Sebze"),
-    Plant(name: "Patlıcan", image: "assets/images/patlıcan.jpg", category: "Sebze"),
-    Plant(name: "Gül", image: "assets/images/gül.jpg", category: "Çiçek"),
-    Plant(name: "Lale", image: "assets/images/lale.jpg", category: "Çiçek"),
-    Plant(name: "Papatya", image: "assets/images/papatya.jpg", category: "Çiçek"),
-    Plant(name: "Menekşe", image: "assets/images/bitki.png", category: "Çiçek"),
-    Plant(name: "Elma", image: "assets/images/bitki.png", category: "Meyve"),
-    Plant(name: "Armut", image: "assets/images/bitki.png", category: "Meyve"),
+    Plant(
+        name: "Domates",
+        image: "assets/images/domates.jpg",
+        category: "Sebze",
+        wateringSchedule: "Haftada 2-3 kez",
+        fertilizingSchedule: "2 haftada 1 kez",
+        plantingSeason: "Nisan-Mayıs"),
+    Plant(
+        name: "Biber",
+        image: "assets/images/yeşil.jpg",
+        category: "Sebze",
+        wateringSchedule: "Haftada 1-2 kez",
+        fertilizingSchedule: "3 haftada 1 kez",
+        plantingSeason: "Mayıs-Haziran"),
+    Plant(
+        name: "Patlıcan",
+        image: "assets/images/patlıcan.jpg",
+        category: "Sebze",
+        wateringSchedule: "Haftada 2 kez",
+        fertilizingSchedule: "Ayda 1 kez",
+        plantingSeason: "Nisan-Mayıs"),
+    Plant(
+        name: "Gül",
+        image: "assets/images/gül.jpg",
+        category: "Çiçek",
+        wateringSchedule: "Haftada 1 kez",
+        fertilizingSchedule: "Ayda 1 kez",
+        plantingSeason: "İlkbahar"),
+    Plant(
+        name: "Lale",
+        image: "assets/images/lale.jpg",
+        category: "Çiçek",
+        wateringSchedule: "Haftada 2 kez",
+        fertilizingSchedule: "2 ayda 1 kez",
+        plantingSeason: "Sonbahar"),
+    Plant(
+        name: "Papatya",
+        image: "assets/images/papatya.jpg",
+        category: "Çiçek",
+        wateringSchedule: "Haftada 1 kez",
+        fertilizingSchedule: "3 ayda 1 kez",
+        plantingSeason: "İlkbahar-Yaz"),
+    Plant(
+        name: "Menekşe",
+        image: "assets/images/bitki.png",
+        category: "Çiçek",
+        wateringSchedule: "Haftada 1 kez",
+        fertilizingSchedule: "2 ayda 1 kez",
+        plantingSeason: "İlkbahar"),
+    Plant(
+        name: "Elma",
+        image: "assets/images/bitki.png",
+        category: "Meyve",
+        wateringSchedule: "Haftada 1 kez",
+        fertilizingSchedule: "2 ayda 1 kez",
+        plantingSeason: "İlkbahar"),
+    Plant(
+        name: "Armut",
+        image: "assets/images/bitki.png",
+        category: "Meyve",
+        wateringSchedule: "Haftada 1 kez",
+        fertilizingSchedule: "2 ayda 1 kez",
+        plantingSeason: "İlkbahar"),
   ];
 
-  List<String> get _categories => _allPlants.map((p) => p.category).toSet().toList();
-  
+  List<String> get _categories =>
+      _allPlants.map((p) => p.category).toSet().toList();
+
   @override
   void initState() {
     super.initState();
@@ -92,7 +148,8 @@ class _BitkilerimPageState extends State<BitkilerimPage> with SingleTickerProvid
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text("${plant.name} Kaldırılsın mı?"),
-        content: const Text("Bu bitkiyi bahçenizden kaldırmak istediğinize emin misiniz?"),
+        content: const Text(
+            "Bu bitkiyi bahçenizden kaldırmak istediğinize emin misiniz?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -186,10 +243,9 @@ class _BitkilerimPageState extends State<BitkilerimPage> with SingleTickerProvid
                 ),
               ),
             ),
-            
-                  
+
             const Divider(),
-            
+
             // Category tabs
             TabBar(
               controller: _tabController,
@@ -204,7 +260,7 @@ class _BitkilerimPageState extends State<BitkilerimPage> with SingleTickerProvid
                 ..._categories.map((category) => Tab(text: category)).toList(),
               ],
             ),
-            
+
             // Plants grid
             Expanded(
               child: TabBarView(
@@ -213,9 +269,11 @@ class _BitkilerimPageState extends State<BitkilerimPage> with SingleTickerProvid
                   // All plants tab
                   _buildPlantsGrid(_allPlants),
                   // Category specific tabs
-                  ..._categories.map((category) => 
-                    _buildPlantsGrid(_allPlants.where((p) => p.category == category).toList())
-                  ).toList(),
+                  ..._categories
+                      .map((category) => _buildPlantsGrid(_allPlants
+                          .where((p) => p.category == category)
+                          .toList()))
+                      .toList(),
                 ],
               ),
             ),
@@ -265,7 +323,6 @@ class _BitkilerimPageState extends State<BitkilerimPage> with SingleTickerProvid
           children: [
             const Icon(Icons.eco, color: Color(0xFF2C6E49)),
             const SizedBox(width: 8),
-            
           ],
         ),
         actions: [
@@ -274,7 +331,8 @@ class _BitkilerimPageState extends State<BitkilerimPage> with SingleTickerProvid
             onPressed: () {/* Search functionality */},
           ),
           IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: Color(0xFF2C6E49)),
+            icon: const Icon(Icons.notifications_outlined,
+                color: Color(0xFF2C6E49)),
             onPressed: () {/* Notifications */},
           ),
         ],
@@ -302,7 +360,7 @@ class _BitkilerimPageState extends State<BitkilerimPage> with SingleTickerProvid
                 ),
               ),
             ),
-            
+
             // Selected plants section
             SliverToBoxAdapter(
               child: Container(
@@ -363,7 +421,6 @@ class _BitkilerimPageState extends State<BitkilerimPage> with SingleTickerProvid
                                       fontSize: 16,
                                     ),
                                   ),
-                                  
                                 ],
                               ),
                             ),
@@ -374,7 +431,14 @@ class _BitkilerimPageState extends State<BitkilerimPage> with SingleTickerProvid
                             children: _selectedPlants.map((plant) {
                               return GestureDetector(
                                 onTap: () {
-                                  // Show plant detail screen
+                                  // Bitki detay sayfasını aç
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          PlantDetailPage(plant: plant),
+                                    ),
+                                  );
                                 },
                                 onLongPress: () => _removePlant(plant),
                                 child: Tooltip(
@@ -394,8 +458,10 @@ class _BitkilerimPageState extends State<BitkilerimPage> with SingleTickerProvid
                                       children: [
                                         Container(
                                           decoration: BoxDecoration(
-                                            color: const Color(0xFFEAE1C8).withOpacity(0.5),
-                                            borderRadius: BorderRadius.circular(12),
+                                            color: const Color(0xFFEAE1C8)
+                                                .withOpacity(0.5),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
                                           ),
                                           padding: const EdgeInsets.all(8),
                                           child: Image.asset(
@@ -435,9 +501,6 @@ class _BitkilerimPageState extends State<BitkilerimPage> with SingleTickerProvid
                 ),
               ),
             ),
-
-            // Add New Plant Button
-           
 
             // All plants section
             SliverToBoxAdapter(
@@ -512,11 +575,17 @@ class Plant {
   final String name;
   final String image;
   final String category;
+  final String wateringSchedule; // Sulama programı
+  final String fertilizingSchedule; // Gübreleme programı
+  final String plantingSeason; // Ekim mevsimi
 
   const Plant({
-    required this.name, 
-    required this.image, 
+    required this.name,
+    required this.image,
     required this.category,
+    this.wateringSchedule = 'Haftada 2 kez',
+    this.fertilizingSchedule = 'Ayda 1 kez',
+    this.plantingSeason = 'İlkbahar',
   });
 
   @override
@@ -546,6 +615,15 @@ class PlantCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
+        onLongPress: () {
+          // Uzun basılınca detay sayfasını aç
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PlantDetailPage(plant: plant),
+            ),
+          );
+        },
         borderRadius: BorderRadius.circular(12),
         splashColor: const Color(0xFF2C6E49).withOpacity(0.1),
         child: Container(
@@ -555,7 +633,8 @@ class PlantCard extends StatelessWidget {
                 : Colors.white,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isSelected ? const Color(0xFF2C6E49) : Colors.grey.shade200,
+              color:
+                  isSelected ? const Color(0xFF2C6E49) : Colors.grey.shade200,
               width: isSelected ? 2 : 1,
             ),
             boxShadow: [
@@ -626,6 +705,160 @@ class PlantCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// Bitki detay sayfası
+class PlantDetailPage extends StatelessWidget {
+  final Plant plant;
+
+  const PlantDetailPage({super.key, required this.plant});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(plant.name),
+        backgroundColor: const Color(0xFF2C6E49),
+        foregroundColor: Colors.white,
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Bitki görseli
+            SizedBox(
+              width: double.infinity,
+              height: 200,
+              child: Image.asset(
+                plant.image,
+                fit: BoxFit.cover,
+              ),
+            ),
+
+            // Bitki bilgileri
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    plant.name,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    plant.category,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Bakım Takvimi
+                  const Text(
+                    'Bakım Takvimi',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Ekim zamanı
+                  _buildScheduleCard(
+                    context: context,
+                    title: 'Ekim Zamanı',
+                    content: plant.plantingSeason,
+                    icon: Icons.calendar_today,
+                    color: Colors.green[700]!,
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Sulama programı
+                  _buildScheduleCard(
+                    context: context,
+                    title: 'Sulama Programı',
+                    content: plant.wateringSchedule,
+                    icon: Icons.water_drop,
+                    color: Colors.blue[700]!,
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Gübreleme programı
+                  _buildScheduleCard(
+                    context: context,
+                    title: 'Gübreleme Programı',
+                    content: plant.fertilizingSchedule,
+                    icon: Icons.spa,
+                    color: Colors.brown[700]!,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildScheduleCard({
+    required BuildContext context,
+    required String title,
+    required String content,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                icon,
+                color: color,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  content,
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

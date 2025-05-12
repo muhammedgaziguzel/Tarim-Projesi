@@ -45,6 +45,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/logo.jpg
     - assets/images/domates.jpg
     - assets/images/gül.jpg
     - assets/images/lale.jpg

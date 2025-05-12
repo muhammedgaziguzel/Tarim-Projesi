@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'dart:ui';
 import '../services/calendar_firestore_service.dart';
 
 class TakvimScreen extends StatefulWidget {
@@ -69,8 +68,7 @@ class _TakvimScreenState extends State<TakvimScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final dayEntry = _dayEntries[selectedDay];
-
+    // Removed unused variable 'dayEntrys'
     return Scaffold(
       appBar: AppBar(
         title: Text('Takvim'),

@@ -25,31 +25,33 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  final List<Widget> _screens = [
-    const BitkilerimApp(),
-    const WeatherApp(),
-    const HesabimScreen(),
-    TakvimScreen(), // const kaldırıldı
-    const DerslerScreen(),
-    const TarimKredisiApp(),
-    const MalzemelerScreen(),
-    const YapilacaklarScreen(),
-    const GaleriScreen(),
-    const BilgilerScreen(),
-  ];
+ final List<Widget> _screens = [
+  const BitkilerimApp(),
+  const WeatherApp(),
+  TakvimScreen(),         // 🔄 Buraya alındı
+  const HesabimScreen(),  // 🔄 Buraya alındı
+  const DerslerScreen(),
+  const TarimKredisiApp(),
+  const MalzemelerScreen(),
+  const YapilacaklarScreen(),
+  const GaleriScreen(),
+  const BilgilerScreen(),
+];
+
 
   final List<String> _titles = [
-    'Bitkilerim',
-    'Hava Durumu',
-    'Hesabım',
-    'Takvim',
-    'Dersler',
-    'Tarım Kredisi',
-    'Malzemeler',
-    'Yapılacaklar',
-    'Galeri',
-    'Bilgiler',
-  ];
+  'Bitkilerim',
+  'Hava Durumu',
+  'Takvim',      // 🔄 Buraya alındı
+  'Hesabım',     // 🔄 Buraya alındı
+  'Dersler',
+  'Tarım Kredisi',
+  'Malzemeler',
+  'Yapılacaklar',
+  'Galeri',
+  'Bilgiler',
+];
+
 
   void _onTabSelected(int index) {
     if (index >= 0 && index <= 3) {
@@ -89,35 +91,35 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: _screens[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex < 4 ? _selectedIndex : 0,
-        onTap: _onTabSelected,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor:
-            const Color(0xFF4C7C46), // BottomNavigationBar rengini değiştirdik
-        selectedItemColor: const Color.fromARGB(255, 9, 77, 0),
-        unselectedItemColor: Colors.white,
-        showUnselectedLabels: true,
-        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.local_florist),
-            label: 'Bitkilerim',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.wb_sunny),
-            label: 'Hava Durumu',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Hesabım',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: 'Takvim',
-          ),
-        ],
-      ),
+     bottomNavigationBar: BottomNavigationBar(
+  currentIndex: _selectedIndex < 4 ? _selectedIndex : 0,
+  onTap: _onTabSelected,
+  type: BottomNavigationBarType.fixed,
+  backgroundColor: const Color(0xFF4C7C46),
+  selectedItemColor: const Color.fromARGB(255, 9, 77, 0),
+  unselectedItemColor: Colors.white,
+  showUnselectedLabels: true,
+  selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+  items: const [
+    BottomNavigationBarItem(
+      icon: Icon(Icons.local_florist),
+      label: 'Bitkilerim',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.wb_sunny),
+      label: 'Hava Durumu',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.calendar_today), // 🔄 Buraya alındı
+      label: 'Takvim',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.person), // 🔄 Buraya alındı
+      label: 'Hesabım',
+    ),
+  ],
+),
+
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // 👇 Butona tıklandığında AiChatScreen'e git

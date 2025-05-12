@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "axios": "^1.9.0",
+    "botbuilder": "^4.23.2",
+    "dotenv": "^16.5.0",
+    "restify": "^7.7.0",
+    "restify-cors-middleware": "^1.1.1"
+  }
+}
