@@ -29,11 +29,11 @@ class HesabimScreen extends StatelessWidget {
 class HesabimEkrani extends StatelessWidget {
   const HesabimEkrani({super.key});
 
-  final String adSoyad = "Hasan Akbaba";
-  final String email = "Akbabah10@gmail.com";
-  final String telefon = "+90 530 579 2039";
-  final String dogumTarihi = "04.01.2005";
-  final String kullaniciAdi = "Hasanakbaba0";
+  final String adSoyad = "Ad Soyad";
+  final String email = "******@gmail.com";
+  final String telefon = "+90 5*********";
+  final String dogumTarihi = "02.07.2003";
+  final String kullaniciAdi = "kullaniciadi";
 
   @override
   Widget build(BuildContext context) {

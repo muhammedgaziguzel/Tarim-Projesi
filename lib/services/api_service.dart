@@ -1,46 +1,110 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  final String apiUrl = "http://10.0.2.2:5001/predict";  // 📌 Emülatör için!
+  static String _baseIp = "127.0.0.1"; // Varsayılan IP
 
+  // Uygulama başlatılırken çağrılmalı
+  static Future<void> initialize() async {
+    final prefs = await SharedPreferences.getInstance();
+    _baseIp = prefs.getString('ip_adresi') ?? "127.0.0.1";
+  }
+
+  // Dinamik URL'ler
+  String get flaskUrl => "http://$_baseIp:5002";
+  String get nodeUrl => "http://$_baseIp:5001";
+
+  // Görsel analizi için Flask API'ye istek
   Future<Map<String, dynamic>?> sendImage(File imageFile) async {
     try {
-      var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
-      request.headers.addAll({"Content-Type": "multipart/form-data"});  
+      var request = http.MultipartRequest('POST', Uri.parse('$flaskUrl/predict'));
       request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
-
-      print("📡 Flutter'dan API'ye Gönderilen Görsel: ${imageFile.path}");
 
       var response = await request.send();
       var responseData = await response.stream.bytesToString();
 
-      print("📡 API’den Dönen Yanıt: $responseData");
-      print("📡 API HTTP Durum Kodu: ${response.statusCode}");
-
       if (response.statusCode == 200) {
-        try {
-          var jsonData = json.decode(responseData);
-
-          if (jsonData.containsKey('label') && jsonData.containsKey('confidence')) {
-            print("✅ API'den gelen tahmin: ${jsonData['label']}, Güven: ${jsonData['confidence']}");
-            return jsonData;
-          } else {
-            print("⚠️ API Yanıtı Beklenen Format Değil!");
-            return {"status": "error", "message": "Yanıt formatı hatalı"};
-          }
-        } catch (e) {
-          print("❌ JSON dönüşüm hatası: $e");
-          return {"status": "error", "message": "Yanıt çözümlenemedi"};
-        }
+        return json.decode(responseData);
       } else {
-        print("❌ API Hatası: ${response.statusCode}");
-        return {"status": "error", "message": "Tahmin alınamadı (${response.statusCode})"};
+        print("❌ Flask API Hatası: ${response.statusCode}");
+        return null;
       }
     } catch (e) {
-      print("❌ Beklenmedik bir hata oluştu: $e");
-      return {"status": "error", "message": "Bağlantı hatası: $e"};
+      print("❌ Flask Bağlantı Hatası: $e");
+      return null;
+    }
+  }
+
+  // Mesaj ve opsiyonel görseli aynı anda göndermek için Node.js API'ye istek
+  Future<Map<String, dynamic>?> sendMessageWithImage(String message, {File? imageFile, required String userId}) async {
+    try {
+      var request = http.MultipartRequest('POST', Uri.parse('$nodeUrl/chat'));
+      request.fields['userId'] = userId;
+      request.fields['message'] = message;
+
+      if (imageFile != null) {
+        request.files.add(await http.MultipartFile.fromPath('image', imageFile.path));
+      }
+
+      var response = await request.send();
+      var responseData = await response.stream.bytesToString();
+
+      if (response.statusCode == 200) {
+        return jsonDecode(responseData);
+      } else {
+        print('❌ Node.js API Hatası: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('❌ Node.js Hata: $e');
+      return null;
+    }
+  }
+
+  // Sadece mesaj göndermek için (dinamik IP ile)
+  Future<String?> sendMessage(String message, {required String userId, String? contextLabel}) async {
+    final uri = Uri.parse('$flaskUrl/predict');
+    try {
+      final response = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'message': message,
+          'user_id': userId,
+          if (contextLabel != null) 'context': contextLabel,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['reply'];
+      } else {
+        print("Hata: ${response.body}");
+        return null;
+      }
+    } catch (e) {
+      print("İstek hatası: $e");
+      return null;
+    }
+  }
+
+  // IP adresini kaydet ve bellekte güncelle
+  static Future<void> saveIpAddress(String ip) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('ip_adresi', ip);
+    _baseIp = ip;
+  }
+
+  // Flask ping ile bağlantı testi
+  static Future<bool> testConnection(String ip) async {
+    try {
+      final url = Uri.parse("http://$ip:5002/ping");
+      final response = await http.get(url).timeout(Duration(seconds: 3));
+      return response.statusCode == 200;
+    } catch (_) {
+      return false;
     }
   }
 }

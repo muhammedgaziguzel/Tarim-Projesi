@@ -33,22 +33,43 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.debug
+            // 🔹 R8 hata düzeltmesi: TensorFlow Lite sınıflarını koruma kuralları ekleyelim
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    packagingOptions {
+        // 🔹 TensorFlow Lite yerel kütüphanelerin kaldırılmasını önleyelim
+        doNotStrip "lib/**/libtensorflowlite.so"
+        doNotStrip "lib/**/libtensorflowlite_gpu_delegate.so"
+    }
+}
+
+repositories {
+    google()
+    mavenCentral()
+    // 🔹 TensorFlow bağımlılıklarının güncellenmesi için ek Maven deposu
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
 
 dependencies {
     // Firebase BoM (Bill of Materials) import ediliyor
     implementation platform('com.google.firebase:firebase-bom:33.0.0')
 
-    // Firebase Analytics bağımlılığı (Firebase ürünlerinden biri)
+    // Firebase bağımlılıkları
     implementation 'com.google.firebase:firebase-analytics'
-
-    // Diğer Firebase ürünleri buraya eklenebilir:
     implementation 'com.google.firebase:firebase-auth'  // ✅ Firebase Auth eklendi
     implementation 'com.google.firebase:firebase-firestore' // ✅ Firestore eklendi
-}
 
-flutter {
-    source = "../.."
+    // 🔹 TensorFlow Lite bağımlılıkları (Güncellenmiş sürüm)
+    implementation 'org.tensorflow:tensorflow-lite:2.10.0'
+    implementation 'org.tensorflow:tensorflow-lite-gpu:2.10.0'
+    implementation 'org.tensorflow:tensorflow-lite-gpu-delegate-plugin:0.4.2'
+    
+    // 🔹 Eksik bağımlılığı düzelttik! TensorFlow Lite GPU API sürümünü güncelledik
+    implementation 'org.tensorflow:tensorflow-lite-gpu-api:2.10.0'
+
+    // 🔹 R8'in sınıfları kaldırmasını engellemek için ekstra koruma bağımlılığı ekleyelim
+    implementation 'androidx.annotation:annotation:1.6.0'
 }

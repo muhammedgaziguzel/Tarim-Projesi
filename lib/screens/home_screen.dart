@@ -12,7 +12,7 @@ import 'galeri_screen.dart';
 import 'bilgiler_screen.dart';
 import 'girisekrani_screen.dart';
 import 'package:tarim_proje/widgets/drawer_menu.dart';
-import 'package:tarim_proje/screens/ai_chat_screen.dart'; // 👈 AI ekranı eklendi
+import 'package:tarim_proje/screens/ai_chat_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,33 +25,31 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
- final List<Widget> _screens = [
-  const BitkilerimApp(),
-  const WeatherApp(),
-  TakvimScreen(),         // 🔄 Buraya alındı
-  const HesabimScreen(),  // 🔄 Buraya alındı
-  const DerslerScreen(),
-  const TarimKredisiApp(),
-  const MalzemelerScreen(),
-  const YapilacaklarScreen(),
-  const GaleriScreen(),
-  const BilgilerScreen(),
-];
-
+  final List<Widget> _screens = [
+    const BitkilerimApp(),
+    const WeatherApp(),
+    TakvimScreen(),
+    const HesabimScreen(),
+    const DerslerScreen(),
+    const TarimKredisiApp(),
+    const MalzemelerScreen(),
+    const YapilacaklarScreen(),
+    const GaleriScreen(),
+    const BilgilerScreen(),
+  ];
 
   final List<String> _titles = [
-  'Bitkilerim',
-  'Hava Durumu',
-  'Takvim',      // 🔄 Buraya alındı
-  'Hesabım',     // 🔄 Buraya alındı
-  'Dersler',
-  'Tarım Kredisi',
-  'Malzemeler',
-  'Yapılacaklar',
-  'Galeri',
-  'Bilgiler',
-];
-
+    'Bitkilerim',
+    'Hava Durumu',
+    'Takvim',
+    'Hesabım',
+    'Dersler',
+    'Tarım Kredisi',
+    'Malzemeler',
+    'Yapılacaklar',
+    'Galeri',
+    'Bilgiler',
+  ];
 
   void _onTabSelected(int index) {
     if (index >= 0 && index <= 3) {
@@ -78,58 +76,120 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    const Color mainGreen = Color(0xFF2E7D32); // Canlı koyu yeşil
+    const Color darkGreenStart = Color(0xFF1B5E20);
+    const Color darkGreenEnd = Color(0xFF388E3C);
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_titles[_selectedIndex]),
-        backgroundColor: const Color(0xFF4C7C46), // AppBar rengini değiştirdik
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _signOut,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [darkGreenStart, darkGreenEnd],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
           ),
-        ],
+          child: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            centerTitle: true,
+            title: Text(
+              _titles[_selectedIndex],
+              style: const TextStyle(
+                fontFamily: 'Roboto',
+                fontWeight: FontWeight.w600,
+                fontSize: 24,
+                color: Colors.white,
+                letterSpacing: 0.5,
+              ),
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.logout),
+                tooltip: 'Çıkış Yap',
+                onPressed: _signOut,
+                color: Colors.white,
+                splashRadius: 24,
+              ),
+            ],
+          ),
+        ),
       ),
       body: _screens[_selectedIndex],
-     bottomNavigationBar: BottomNavigationBar(
-  currentIndex: _selectedIndex < 4 ? _selectedIndex : 0,
-  onTap: _onTabSelected,
-  type: BottomNavigationBarType.fixed,
-  backgroundColor: const Color(0xFF4C7C46),
-  selectedItemColor: const Color.fromARGB(255, 9, 77, 0),
-  unselectedItemColor: Colors.white,
-  showUnselectedLabels: true,
-  selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
-  items: const [
-    BottomNavigationBarItem(
-      icon: Icon(Icons.local_florist),
-      label: 'Bitkilerim',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.wb_sunny),
-      label: 'Hava Durumu',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.calendar_today), // 🔄 Buraya alındı
-      label: 'Takvim',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.person), // 🔄 Buraya alındı
-      label: 'Hesabım',
-    ),
-  ],
-),
-
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF2E7D32), Color(0xFF4CAF50)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.25),
+              offset: const Offset(0, -3),
+              blurRadius: 12,
+            ),
+          ],
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(18),
+            topRight: Radius.circular(18),
+          ),
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _selectedIndex < 4 ? _selectedIndex : 0,
+          onTap: _onTabSelected,
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Colors.transparent,
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.white70,
+          showUnselectedLabels: true,
+          selectedLabelStyle: const TextStyle(
+            fontFamily: 'Roboto',
+            fontWeight: FontWeight.w700,
+            fontSize: 14,
+          ),
+          unselectedLabelStyle: const TextStyle(
+            fontFamily: 'Roboto',
+            fontWeight: FontWeight.w500,
+            fontSize: 13,
+          ),
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.local_florist_outlined),
+              label: 'Bitkilerim',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.wb_sunny_outlined),
+              label: 'Hava Durumu',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.calendar_today_outlined),
+              label: 'Takvim',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline),
+              label: 'Hesabım',
+            ),
+          ],
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // 👇 Butona tıklandığında AiChatScreen'e git
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const AiChatScreen()),
           );
         },
-        child: const Icon(Icons.camera), // İstersen burayı değiştiririz
-        backgroundColor: const Color(0xFF388E3C),
+        backgroundColor: mainGreen,
+        elevation: 12,
+        tooltip: 'Yapay Zeka',
+        child: const Icon(
+          Icons.smart_toy_outlined,
+          color: Colors.white,
+          size: 32,
+        ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       drawer: DrawerMenu(
