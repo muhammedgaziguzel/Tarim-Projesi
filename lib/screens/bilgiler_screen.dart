@@ -4,7 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 class BilgilerScreen extends StatelessWidget {
   const BilgilerScreen({super.key});
 
-  // Function to launch URLs safely
+  // URL'yi güvenli bir şekilde başlatan yardımcı fonksiyon
   Future<void> _launchURL(String url) async {
     final Uri uri = Uri.parse(url);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
@@ -14,13 +14,12 @@ class BilgilerScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Define colors as constants
+    // Tema renkleri
     const Color backgroundColor = Color(0xFFEAE1C8);
     const Color buttonColor = Color(0xFF2C6E49);
 
     return Scaffold(
       appBar: AppBar(
-        // Removed title text as requested
         backgroundColor: buttonColor,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -45,7 +44,7 @@ class BilgilerScreen extends StatelessWidget {
                         size: 80, color: buttonColor),
                     const SizedBox(height: 16),
                     const Text(
-                      "Uygulama Adı",
+                      "Tarım Cepte",
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -63,7 +62,7 @@ class BilgilerScreen extends StatelessWidget {
                     ),
                     const Divider(height: 32, thickness: 1),
                     const Text(
-                      "Bu uygulama, kullanıcıların hayatını kolaylaştırmak için geliştirilmiştir. Daha fazla bilgi almak için aşağıdaki bağlantıları ziyaret edebilirsiniz.",
+                      "Bu uygulama, kullanıcıların hayatını kolaylaştırmak için geliştirilmiştir. Daha fazla bilgi almak için aşağıdaki bağlantıyı ziyaret edebilirsiniz.",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 15,
@@ -74,10 +73,9 @@ class BilgilerScreen extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () =>
-                            _launchURL("https://github.com/seninrepo"),
+                        onPressed: () => _launchURL("https://youtu.be/IA2Y3KipGGU"),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: buttonColor,
+                          backgroundColor: Colors.redAccent,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
@@ -86,28 +84,7 @@ class BilgilerScreen extends StatelessWidget {
                           elevation: 2,
                         ),
                         child: const Text(
-                          "GitHub",
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w500),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () => _launchURL("mailto:destek@email.com"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: buttonColor,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          elevation: 2,
-                        ),
-                        child: const Text(
-                          "İletişim",
+                          "Tanıtım Videosu",
                           style: TextStyle(
                               fontSize: 16, fontWeight: FontWeight.w500),
                         ),

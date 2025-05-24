@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
-
-void main() {
-  runApp(const HesabimScreen());
-}
+import 'package:tarim_proje/services/auth_service.dart';
+import 'package:tarim_proje/screens/girisekrani_screen.dart';
+import 'package:tarim_proje/screens/profili_duzenle_screen.dart';
+import 'package:tarim_proje/screens/ayarlar_screen.dart';
+import 'package:tarim_proje/screens/favoriler_screen.dart';
+import 'package:tarim_proje/screens/adresler_screen.dart';
+import 'package:tarim_proje/screens/siparisler_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HesabimScreen extends StatelessWidget {
   const HesabimScreen({super.key});
@@ -146,7 +151,14 @@ class HesabimEkrani extends StatelessWidget {
                   children: [
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    const ProfilDuzenleScreen()),
+                          );
+                        },
                         icon: const Icon(Icons.edit, color: Colors.white),
                         label: const Text(
                           "Bilgileri Düzenle",
@@ -178,17 +190,47 @@ class HesabimEkrani extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      menuItem(context, "Adreslerim", Icons.location_on, () {}),
+                      menuItem(context, "Adreslerim", Icons.location_on, () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const AdreslerScreen()),
+                        );
+                      }),
                       const Divider(height: 1),
-                      menuItem(
-                          context, "Siparişlerim", Icons.shopping_bag, () {}),
+                      menuItem(context, "Siparişlerim", Icons.shopping_bag, () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const SiparislerScreen()),
+                        );
+                      }),
                       const Divider(height: 1),
-                      menuItem(context, "Favorilerim", Icons.favorite, () {}),
+                      menuItem(context, "Favorilerim", Icons.favorite, () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const FavorilerScreen()),
+                        );
+                      }),
                       const Divider(height: 1),
-                      menuItem(context, "Ayarlar", Icons.settings, () {}),
+                      menuItem(context, "Ayarlar", Icons.settings, () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const AyarlarScreen()),
+                        );
+                      }),
                       const Divider(height: 1),
-                      menuItem(context, "Çıkış Yap", Icons.logout, () {},
-                          textColor: Colors.red),
+                      menuItem(context, "Çıkış Yap", Icons.logout, () async {
+                        await AuthService().signOut();
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const GirisekraniScreen()),
+                          (route) => false,
+                        );
+                      }, textColor: Colors.red),
                     ],
                   ),
                 ),

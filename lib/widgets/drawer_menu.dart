@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tarim_proje/screens/ip_secme_screen.dart'; // 🔥 IP ekranı import edildi
 
 class DrawerMenu extends StatelessWidget {
   final Function(int) onItemTapped;
@@ -36,49 +37,54 @@ class DrawerMenu extends StatelessWidget {
             ),
             // Ana Menü
             ListTile(
-              leading: Icon(Icons.school,
-                  color: Colors.deepPurple), // Dersler: Bilgelik
+              leading: const Icon(Icons.school, color: Colors.deepPurple),
               title: const Text('Dersler'),
               onTap: () => onItemTapped(0),
               selected: selectedIndex == 0,
             ),
             ListTile(
-              leading: Icon(Icons.monetization_on,
-                  color: Colors.green), // Tarım Kredisi: Para
+              leading: const Icon(Icons.monetization_on, color: Colors.green),
               title: const Text('Tarım Kredisi'),
               onTap: () => onItemTapped(1),
               selected: selectedIndex == 1,
             ),
             ListTile(
-              leading: Icon(Icons.inventory,
-                  color: Colors.brown), // Malzemeler: Toprak/Depo hissi
+              leading: const Icon(Icons.inventory, color: Colors.brown),
               title: const Text('Malzemeler'),
               onTap: () => onItemTapped(2),
               selected: selectedIndex == 2,
             ),
-            // Yeni Menü Öğeleri
             ListTile(
-              leading: Icon(Icons.list,
-                  color: Colors.orange), // Yapılacaklar: Uyarı/Renkli
+              leading: const Icon(Icons.list, color: Colors.orange),
               title: const Text('Yapılacaklar'),
               onTap: () => onItemTapped(3),
               selected: selectedIndex == 3,
             ),
             ListTile(
-              leading: Icon(Icons.photo_album,
-                  color: Colors.blue), // Galeri: Görsellik
+              leading: const Icon(Icons.photo_album, color: Colors.blue),
               title: const Text('Galeri'),
               onTap: () => onItemTapped(4),
               selected: selectedIndex == 4,
             ),
             ListTile(
-              leading: Icon(Icons.info,
-                  color: Colors.teal), // Bilgiler: Bilgilendirme
+              leading: const Icon(Icons.info, color: Colors.teal),
               title: const Text('Bilgiler'),
               onTap: () => onItemTapped(5),
               selected: selectedIndex == 5,
             ),
-            // Destek Bölümü
+            const Divider(),
+            // 🔥 IP Ayarları bölümü eklendi
+            ListTile(
+              leading: const Icon(Icons.settings_ethernet, color: Colors.grey),
+              title: const Text('IP Ayarları'),
+              onTap: () {
+                Navigator.pop(context); // Drawer'ı kapat
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const IpSecmeScreen()),
+                );
+              },
+            ),
             const Divider(),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0),

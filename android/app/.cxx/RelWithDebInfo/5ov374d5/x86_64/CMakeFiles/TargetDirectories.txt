@@ -1,0 +1,2 @@
+C:/Users/gazi2/OneDrive/Desktop/Proje Genel/Tarim-Projesi/android/app/.cxx/RelWithDebInfo/5ov374d5/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/gazi2/OneDrive/Desktop/Proje Genel/Tarim-Projesi/android/app/.cxx/RelWithDebInfo/5ov374d5/x86_64/CMakeFiles/rebuild_cache.dir
